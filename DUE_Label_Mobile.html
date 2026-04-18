@@ -495,10 +495,10 @@ main {
       <div class="logo-sub">Etiquetas</div>
     </div>
   </div>
-  <div class="bt-pill" id="bt-pill" onclick="toggleBluetooth()">
+  <button class="bt-pill" id="bt-pill" onclick="toggleBluetooth()" type="button">
     <div class="bt-dot" id="bt-dot"></div>
     <span id="bt-label">Bluetooth</span>
-  </div>
+  </button>
 </div>
 
 <!-- CHEF BAR -->
@@ -1272,4 +1272,4 @@ function renderLog() {
         <div class="log-prod">${e.produto}</div>
         <div class="log-meta">${e.hora} · ${e.peso} · Val: ${e.validade} · Chef: ${e.chef} · ${e.qty}×</div>
       </div>
-      <span class="log-tag ${e.tipo}"
+      <span class
