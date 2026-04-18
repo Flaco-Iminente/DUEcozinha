@@ -704,104 +704,176 @@ const S = {
   log: []
 };
 
-// ===== TSPL ENGINE =====
-// Gera comandos TSPL para impressora TSC 50x80mm
+// ===== MOTOR DE IMPRESSÃO =====
+// PT260 (Xprinter) aceita ESC/POS para etiquetas simples
+// Referência: protocolo ESC/POS padrão com comandos de label
+
+function buildCPCL(dados) {
+  // CPCL — Comtec Printer Control Language
+  // Protocolo correto para Xprinter PT260
+  // 50mm x 80mm @ 203dpi = 400 x 640 dots
+  // Unidade CPCL: dots (1 dot = 0.125mm @ 203dpi)
+
+  const { produto, peso, pesoBruto, pesoLiquido, fornecedor, obs,
+          turno, chef, tipo, validadeDias, qty } = dados;
+
+  const agora = new Date();
+  const dataPrep = fmt(agora);
+  let dataVal = '---';
+  if (validadeDias) {
+    const d = new Date();
+    d.setDate(d.getDate() + validadeDias);
+    dataVal = fmt(d) + ' (D+' + validadeDias + ')';
+  }
+  const hora = agora.toTimeString().slice(0,5);
+  const tipoLabel = {porcao:'PORCAO', producao:'PRODUCAO', entrada:'ENTRADA'}[tipo];
+
+  let pesoLine = peso || '---';
+  let rendLine = '';
+  if (tipo === 'producao' && pesoBruto && pesoLiquido) {
+    const pct = ((parseFloat(pesoLiquido)/parseFloat(pesoBruto))*100).toFixed(0);
+    pesoLine = pesoBruto;
+    rendLine = 'Rend: ' + pesoLiquido + ' (' + pct + '%)';
+  }
+
+  // CPCL: cabeçalho
+  // ! <offset> <hres> <vres> <height> <qty>
+  // 203dpi: hres=200 vres=200, height em dots
+  let cmd = '';
+  cmd += '! 0 200 200 640 ' + qty + '
+';
+
+  // Fonte disponíveis CPCL: 0-6 (0=menor, 5=maior), também 55=24pt, 56=large
+  // Sintaxe: TEXT <font> <size> <x> <y> <text>
+  // ou: T <font> <size> <x> <y> <text>
+
+  // Linha de topo: DUE (fonte grande, bold)
+  cmd += 'T 4 1 10 10 DUE
+';                     // fonte 4, escala 1
+  cmd += 'T 0 1 250 20 ' + tipoLabel + '
+';       // tipo tag direita
+
+  // Linha separadora
+  cmd += 'LINE 0 55 400 55 2
+';
+
+  // Produto
+  cmd += 'T 4 1 10 65 ' + produto.substring(0,20) + '
+';
+
+  // Linha sep
+  cmd += 'LINE 0 110 400 110 1
+';
+
+  // Peso / Qtd
+  cmd += 'T 0 1 10 120 PESO/QTD
+';
+  cmd += 'T 4 1 10 140 ' + pesoLine + '
+';
+
+  let y = 190;
+
+  if (rendLine) {
+    cmd += 'T 0 1 10 ' + y + ' ' + rendLine + '
+';
+    y += 30;
+  }
+
+  if (fornecedor) {
+    cmd += 'LINE 0 ' + y + ' 400 ' + y + ' 1
+'; y += 5;
+    cmd += 'T 0 1 10 ' + y + ' FORN: ' + fornecedor.substring(0,20) + '
+';
+    y += 30;
+  }
+
+  if (obs) {
+    cmd += 'T 0 1 10 ' + y + ' Obs: ' + obs.substring(0,22) + '
+';
+    y += 30;
+  }
+
+  // Data prep
+  cmd += 'LINE 0 460 400 460 1
+';
+  cmd += 'T 0 1 10 470 Prep: ' + dataPrep + '  ' + hora + '
+';
+
+  // Bloco validade — box invertido
+  cmd += 'BOX 0 505 400 585 2
+';
+  cmd += 'INVERT 0 505 400 585
+';
+  cmd += 'T 0 1 10 510 VALIDADE
+';
+  cmd += 'T 4 1 10 530 ' + dataVal + '
+';
+
+  // Rodapé
+  cmd += 'LINE 0 590 400 590 1
+';
+  cmd += 'T 0 1 10 600 Chef: ' + chef + '   T' + turno + '
+';
+
+  // Fim
+  cmd += 'FORM
+';
+  cmd += 'PRINT
+';
+
+  return new TextEncoder().encode(cmd);
+}
+
+// TSPL como fallback (para impressoras TSC puras)
 function buildTSPL(dados) {
   const { produto, peso, pesoBruto, pesoLiquido, fornecedor, obs,
           turno, chef, tipo, validadeDias, qty } = dados;
 
   const agora = new Date();
   const dataPrep = fmt(agora);
-  let dataVal = '——';
+  let dataVal = '---';
   if (validadeDias) {
     const d = new Date();
     d.setDate(d.getDate() + validadeDias);
     dataVal = fmt(d);
   }
   const hora = agora.toTimeString().slice(0,5);
-
   const tipoLabel = {porcao:'PORCAO', producao:'PRODUCAO', entrada:'ENTRADA'}[tipo];
-
-  // Peso display
-  let pesoLine = peso || '—';
+  let pesoLine = peso || '---';
   let rendLine = '';
   if (tipo === 'producao' && pesoBruto && pesoLiquido) {
     const pct = ((parseFloat(pesoLiquido)/parseFloat(pesoBruto))*100).toFixed(0);
     pesoLine = pesoBruto;
-    rendLine = `Rend: ${pesoLiquido} (${pct}%)`;
+    rendLine = 'Rend: ' + pesoLiquido + ' (' + pct + '%)';
   }
-
-  // TSPL: 50mm x 80mm = 400 dots x 640 dots @ 203dpi
-  // Densidade 8 dots/mm
-  const W = 400; // largura em dots
-  const H = 640; // altura em dots
-
+  const W = 400; const H = 640;
   let cmd = '';
-  cmd += `SIZE 50 mm, 80 mm\n`;
-  cmd += `GAP 3 mm, 0\n`;
-  cmd += `DIRECTION 1\n`;
-  cmd += `REFERENCE 0,0\n`;
-  cmd += `CLS\n`;
-
-  // Stripe topo (6 dots)
-  cmd += `BAR 0,0,${W},6\n`;
-
-  // DUE logo
-  cmd += `TEXT 10,14,"3",0,"DUE"\n`;
-
-  // Tipo tag (canto direito)
-  cmd += `TEXT ${W-10},14,"1",0,"${tipoLabel}"\n`; // precisa ajuste de alinhamento
-
-  // Linha separadora
-  cmd += `BAR 0,42,${W},1\n`;
-
-  // Produto (fonte maior)
-  const prodTrunc = produto.length > 22 ? produto.substring(0,22) : produto;
-  cmd += `TEXT 10,50,"3",0,"${prodTrunc}"\n`;
-
-  // Linha sep
-  cmd += `BAR 0,85,${W},1\n`;
-
-  // Peso
-  cmd += `TEXT 10,95,"1",0,"PESO/QTD"\n`;
-  cmd += `TEXT 10,110,"3",0,"${pesoLine}"\n`;
-
-  // Rendimento (se houver)
+  cmd += 'SIZE 50 mm, 80 mm\n';
+  cmd += 'GAP 3 mm, 0\n';
+  cmd += 'DIRECTION 1\n';
+  cmd += 'REFERENCE 0,0\n';
+  cmd += 'CLS\n';
+  cmd += 'BAR 0,0,' + W + ',6\n';
+  cmd += 'TEXT 10,14,"3",0,"DUE"\n';
+  cmd += 'TEXT 200,14,"1",0,"' + tipoLabel + '"\n';
+  cmd += 'BAR 0,42,' + W + ',1\n';
+  cmd += 'TEXT 10,50,"3",0,"' + produto.substring(0,22) + '"\n';
+  cmd += 'BAR 0,85,' + W + ',1\n';
+  cmd += 'TEXT 10,95,"1",0,"PESO/QTD"\n';
+  cmd += 'TEXT 10,110,"3",0,"' + pesoLine + '"\n';
   let yPos = 145;
-  if (rendLine) {
-    cmd += `TEXT 10,${yPos},"1",0,"${rendLine}"\n`;
-    yPos += 20;
-  }
-
-  // Fornecedor (se houver)
-  if (fornecedor) {
-    cmd += `BAR 0,${yPos},${W},1\n`; yPos += 5;
-    cmd += `TEXT 10,${yPos},"1",0,"FORN: ${fornecedor.substring(0,20)}"\n`;
-    yPos += 18;
-  }
-
-  // Obs
-  if (obs) {
-    cmd += `TEXT 10,${yPos},"1",0,"Obs: ${obs.substring(0,22)}"\n`;
-    yPos += 18;
-  }
-
-  // Data prep
-  cmd += `BAR 0,480,${W},1\n`;
-  cmd += `TEXT 10,490,"1",0,"PREP: ${dataPrep}"\n`;
-
-  // Bloco validade (fundo preto)
-  cmd += `BAR 0,520,${W},80\n`;
-  cmd += `REVERSE 0,520,${W},80\n`;
-  cmd += `TEXT 10,528,"1",0,"VALIDADE"\n`;
-  cmd += `TEXT 10,548,"3",0,"${dataVal}"\n`;
-
-  // Rodapé
-  cmd += `TEXT 10,610,"1",0,"Chef:${chef}  T${turno}  ${hora}"\n`;
-
-  cmd += `PRINT ${qty},1\n`;
-
-  return cmd;
+  if (rendLine) { cmd += 'TEXT 10,' + yPos + ',"1",0,"' + rendLine + '"\n'; yPos += 20; }
+  if (fornecedor) { cmd += 'TEXT 10,' + yPos + ',"1",0,"FORN:' + fornecedor.substring(0,20) + '"\n'; yPos += 18; }
+  if (obs) { cmd += 'TEXT 10,' + yPos + ',"1",0,"Obs:' + obs.substring(0,22) + '"\n'; }
+  cmd += 'BAR 0,480,' + W + ',1\n';
+  cmd += 'TEXT 10,490,"1",0,"PREP: ' + dataPrep + '"\n';
+  cmd += 'BAR 0,520,' + W + ',80\n';
+  cmd += 'REVERSE 0,520,' + W + ',80\n';
+  cmd += 'TEXT 10,530,"1",0,"VALIDADE"\n';
+  cmd += 'TEXT 10,548,"3",0,"' + dataVal + '"\n';
+  cmd += 'TEXT 10,610,"1",0,"Chef:' + chef + ' T' + turno + ' ' + hora + '"\n';
+  cmd += 'PRINT ' + qty + ',1\n';
+  return new TextEncoder().encode(cmd);
 }
 
 function fmt(d) {
@@ -1013,7 +1085,7 @@ async function imprimir() {
     qty: S.qty
   };
 
-  const tspl = buildTSPL(dados);
+  const tspl = buildCPCL(dados); // PT260 usa CPCL
 
   btn.classList.add('sending');
   btn.disabled = true;
