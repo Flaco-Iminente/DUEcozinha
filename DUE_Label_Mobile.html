@@ -1161,19 +1161,19 @@ function buildTSPL(dados) {
   // Separadores em: 196, 351, 537
 
   // ── BLOCO 1: PRODUTO (10–195) ─────────────────────────────
-  // font3 xmul3 ymul3: char 30w×60h, cabe 11 chars/linha
-  const LH3 = 62;
-  const linhasProd = quebrarLinha(prod, 11);
+  // font3 xmul2 ymul2: char 20w×40h, cabe 14-15 chars/linha (reduzido de xmul3)
+  const LH3 = 48;
+  const linhasProd = quebrarLinha(prod, 14);
   const alturaB1 = linhasProd.length * LH3;
   let y = 10 + Math.floor((186 - alturaB1) / 2); // centra verticalmente
 
   for (const linha of linhasProd) {
-    c += 'TEXT ' + centrX(linha, 30) + ',' + y + ',"3",0,3,3,"' + linha + '"' + R;
+    c += 'TEXT ' + centrX(linha, 20) + ',' + y + ',"3",0,2,2,"' + linha + '"' + R;
     y += LH3;
   }
-  c += 'BAR 20,195,' + (W - 40) + ',1' + R;
+  c += 'BAR 20,197,' + (W - 40) + ',1' + R;
 
-  // ── BLOCO 2: DADOS (196–350) ──────────────────────────────
+  // ── BLOCO 2: DADOS (198–352) ──────────────────────────────
   // font2 xmul1: char 10w×20h, cabe ~36 chars/linha
   const linhasB2 = [];
   linhasB2.push(pesoLine + '   ' + tipoLabel);
@@ -1183,26 +1183,26 @@ function buildTSPL(dados) {
 
   const LH2 = 26;
   const alturaB2 = linhasB2.length * LH2;
-  y = 196 + Math.floor((155 - alturaB2) / 2);
+  y = 198 + Math.floor((152 - alturaB2) / 2);
   for (const t of linhasB2) {
     c += 'TEXT ' + centrX(t, 10) + ',' + y + ',"2",0,1,1,"' + t + '"' + R;
     y += LH2;
   }
-  c += 'BAR 20,350,' + (W - 40) + ',1' + R;
+  c += 'BAR 20,352,' + (W - 40) + ',1' + R;
 
-  // ── BLOCO 3: VALIDADE (351–536) ───────────────────────────
+  // ── BLOCO 3: VALIDADE (353–539) ───────────────────────────
   // "VALIDADE · REFR/CONG" font1 + data font4 xmul2 ymul2 (char 24w×48h)
   const valLabel = 'VALIDADE . ' + storageTag;
   const alturaB3 = 14 + 8 + 52; // label + gap + data
-  const yVL = 351 + Math.floor((186 - alturaB3) / 2);
+  const yVL = 353 + Math.floor((184 - alturaB3) / 2);
   c += 'TEXT ' + centrX(valLabel, 8) + ',' + yVL + ',"1",0,1,1,"' + valLabel + '"' + R;
   c += 'TEXT ' + centrX(dataVal, 24) + ',' + (yVL + 22) + ',"4",0,2,2,"' + dataVal + '"' + R;
-  c += 'BAR 20,536,' + (W - 40) + ',1' + R;
+  c += 'BAR 20,539,' + (W - 40) + ',1' + R;
 
-  // ── BLOCO 4: RODAPÉ (537–629) ─────────────────────────────
+  // ── BLOCO 4: RODAPÉ (540–629) ─────────────────────────────
   // chef + data + hora, font2, centralizado verticalmente
   const metaLine = semAcento(chef) + '   ' + dataPrep + '   ' + hora;
-  const yMeta = 537 + Math.floor((93 - 20) / 2) - 6;
+  const yMeta = 540 + Math.floor((89 - 20) / 2) - 6;
   c += 'TEXT ' + centrX(metaLine, 10) + ',' + yMeta + ',"2",0,1,1,"' + metaLine + '"' + R;
 
   c += 'PRINT ' + qty + ',1' + R;
