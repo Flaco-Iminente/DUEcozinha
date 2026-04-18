@@ -809,11 +809,34 @@ function fmt(d) {
 }
 
 // ===== BLUETOOTH =====
-const BT_SERVICE   = '000018f0-0000-1000-8000-00805f9b34fb'; // Seagull/TSC service UUID
-const BT_CHAR_WRITE = '00002af1-0000-1000-8000-00805f9b34fb'; // write characteristic
+// UUIDs Xprinter PT260 / XD210 (protocolo BLE real identificado)
+const BLE_PROFILES = [
+  {
+    // Xprinter PT260 — UUID principal
+    service: '0000ff00-0000-1000-8000-00805f9b34fb',
+    charTX:  '0000ff02-0000-1000-8000-00805f9b34fb', // escrita (TX para impressora)
+    charRX:  '0000ff01-0000-1000-8000-00805f9b34fb', // notificação (RX da impressora)
+    name: 'Xprinter FF00'
+  },
+  {
+    // TSC BLE genérico (alguns modelos XD210)
+    service: 'e7810a71-73ae-499d-8c15-faa9aef0c3f2',
+    charTX:  'bef8d6c9-9c21-4c9e-b632-bd58c1009f9f',
+    charRX:  null,
+    name: 'TSC BLE E781'
+  },
+  {
+    // Fallback genérico — tenta qualquer char com write
+    service: '000018f0-0000-1000-8000-00805f9b34fb',
+    charTX:  '00002af1-0000-1000-8000-00805f9b34fb',
+    charRX:  null,
+    name: 'Seagull 18F0'
+  }
+];
 
-// UUIDs alternativos — impressoras TSC podem usar SPP (Serial Port Profile)
-const SPP_SERVICE  = '00001101-0000-1000-8000-00805f9b34fb';
+const ALL_OPTIONAL_SERVICES = BLE_PROFILES.map(p => p.service).concat([
+  '00001101-0000-1000-8000-00805f9b34fb', // SPP
+]);
 
 async function conectarBluetooth() {
   fecharModal();
@@ -821,49 +844,58 @@ async function conectarBluetooth() {
 
   try {
     const device = await navigator.bluetooth.requestDevice({
-      // Aceitar qualquer dispositivo — usuário seleciona na lista
       acceptAllDevices: true,
-      optionalServices: [
-        BT_SERVICE,
-        SPP_SERVICE,
-        '000018f0-0000-1000-8000-00805f9b34fb',
-        '00001101-0000-1000-8000-00805f9b34fb',
-        '0000ff00-0000-1000-8000-00805f9b34fb',
-        'e7810a71-73ae-499d-8c15-faa9aef0c3f2', // TSC BLE service (alguns modelos)
-      ]
+      optionalServices: ALL_OPTIONAL_SERVICES
     });
 
     S.btDevice = device;
     device.addEventListener('gattserverdisconnected', onDisconnect);
-
-    showToast('Conectando...', 'warn');
+    showToast('Conectando a ' + (device.name || 'impressora') + '…', 'warn');
 
     const server = await device.gatt.connect();
     let char = null;
+    let profileUsado = null;
 
-    // Tentar encontrar característica de escrita
-    const services = await server.getPrimaryServices();
-    for (const service of services) {
+    // 1. Tentar cada perfil conhecido na ordem
+    for (const profile of BLE_PROFILES) {
       try {
-        const chars = await service.getCharacteristics();
-        for (const c of chars) {
-          const props = c.properties;
-          if (props.write || props.writeWithoutResponse) {
-            char = c;
-            break;
-          }
+        const service = await server.getPrimaryService(profile.service);
+        const c = await service.getCharacteristic(profile.charTX);
+        if (c.properties.write || c.properties.writeWithoutResponse) {
+          char = c;
+          profileUsado = profile.name;
+          break;
         }
-        if (char) break;
-      } catch(e) { /* service sem acesso — continuar */ }
+      } catch(e) { /* perfil não encontrado — tentar próximo */ }
+    }
+
+    // 2. Fallback — varrer todos os serviços disponíveis
+    if (!char) {
+      showToast('Perfil fixo não encontrado — varrendo serviços…', 'warn');
+      const services = await server.getPrimaryServices();
+      for (const svc of services) {
+        try {
+          const chars = await svc.getCharacteristics();
+          for (const c of chars) {
+            if (c.properties.write || c.properties.writeWithoutResponse) {
+              char = c;
+              profileUsado = 'Auto (' + svc.uuid.substring(0,8) + ')';
+              break;
+            }
+          }
+          if (char) break;
+        } catch(e) { /* continuar */ }
+      }
     }
 
     if (!char) {
-      throw new Error('Característica de escrita não encontrada. A impressora pode não suportar BLE direto.');
+      throw new Error('Nenhuma característica de escrita encontrada. Verifique se a impressora está ligada e em modo Bluetooth.');
     }
 
     S.btChar = char;
-    setBtStatus('connected', device.name || 'Impressora');
-    showToast(`✓ Conectado: ${device.name || 'Impressora'}`, 'ok');
+    setBtStatus('connected', device.name || 'PT260');
+    showToast(`✓ ${device.name || 'Impressora'} — ${profileUsado}`, 'ok');
+    console.log('[BLE] Conectado via perfil:', profileUsado, '| Char UUID:', char.uuid);
     atualizar();
 
   } catch(err) {
@@ -872,7 +904,7 @@ async function conectarBluetooth() {
       showToast('Nenhum dispositivo selecionado', 'warn');
     } else {
       showToast('Erro: ' + err.message, 'error');
-      console.error(err);
+      console.error('[BLE] Erro de conexão:', err);
     }
   }
 }
@@ -927,18 +959,32 @@ async function enviarTSPL(tspl) {
   const encoder = new TextEncoder();
   const data = encoder.encode(tspl);
 
-  // Enviar em chunks de 512 bytes (limite BLE)
-  const CHUNK = 512;
+  // PT260/XD210 BLE: chunk máximo seguro = 20 bytes (MTU padrão BLE)
+  // Delay entre chunks: 30ms evita buffer overflow na impressora
+  const CHUNK = 20;
+  const DELAY = 30;
+
+  console.log('[BLE] Enviando', data.length, 'bytes em chunks de', CHUNK);
+
   for (let i = 0; i < data.length; i += CHUNK) {
     const chunk = data.slice(i, i + CHUNK);
-    if (S.btChar.properties.writeWithoutResponse) {
-      await S.btChar.writeValueWithoutResponse(chunk);
-    } else {
-      await S.btChar.writeValue(chunk);
+    try {
+      if (S.btChar.properties.writeWithoutResponse) {
+        await S.btChar.writeValueWithoutResponse(chunk);
+      } else {
+        await S.btChar.writeValue(chunk);
+      }
+    } catch(e) {
+      // Se writeWithoutResponse falhou, tentar writeValue
+      try {
+        await S.btChar.writeValue(chunk);
+      } catch(e2) {
+        throw new Error('Falha ao enviar dados: ' + e2.message);
+      }
     }
-    // Pequeno delay entre chunks
-    if (i + CHUNK < data.length) await sleep(50);
+    if (i + CHUNK < data.length) await sleep(DELAY);
   }
+  console.log('[BLE] Envio completo');
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
