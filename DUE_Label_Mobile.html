@@ -338,6 +338,21 @@ main {
 .btn-print.sending { background: var(--warn); }
 .btn-print.success { background: var(--ok); }
 
+.btn-teste {
+  background: var(--surface2);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  height: 36px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  width: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-teste:active { opacity: 0.7; }
+
 /* ===== MODAL BT ===== */
 .modal-bg {
   display: none;
@@ -672,6 +687,9 @@ main {
     <span id="btn-icon">📡</span>
     <span id="btn-text">IMPRIMIR VIA BLUETOOTH</span>
   </button>
+  <button class="btn-teste" id="btn-teste" style="display:none" onclick="imprimirTeste()">
+    🔧 TESTE
+  </button>
 </div>
 
 <!-- MODAL BLUETOOTH -->
@@ -704,144 +722,271 @@ const S = {
   log: []
 };
 
-// ===== MOTOR DE IMPRESSÃO =====
-// ===== MOTOR TSPL =====
-// TSPL = TSC Printer Language — protocolo nativo XD210 / PT260
-// 50mm x 80mm @ 203dpi
-// 1mm = 8 dots → 50mm = 400 dots, 80mm = 640 dots
-
+// ===== TSPL ENGINE =====
+// Gera comandos TSPL para impressora XD210/PT260 50x80mm
+// TSPL TEXT sintaxe: TEXT x,y,"font",rotation,xmul,ymul,"data"
+// Fontes built-in: "0"=tiny "1"=small "2"=medium "3"=large "4"=xlarge
+// \r\n obrigatório como terminador de linha
 function buildTSPL(dados) {
   const { produto, peso, pesoBruto, pesoLiquido, fornecedor, obs,
           turno, chef, tipo, validadeDias, qty } = dados;
 
   const agora = new Date();
   const dataPrep = fmt(agora);
-  let dataVal = '---';
+  let dataVal = 'SEM VALIDADE';
   if (validadeDias) {
     const d = new Date();
     d.setDate(d.getDate() + validadeDias);
-    dataVal = fmt(d) + ' D+' + validadeDias;
+    dataVal = fmt(d);
   }
   const hora = agora.toTimeString().slice(0,5);
-  const tipoLabel = {porcao:'PORCAO', producao:'PRODUCAO', entrada:'ENTRADA'}[tipo];
 
-  let pesoLine = peso || '---';
+  const tipoLabel = {porcao:'PORCAO', producao:'PRODUCAO', entrada:'ENTRADA'}[tipo] || tipo;
+
+  // Peso display
+  let pesoLine = peso || '-';
   let rendLine = '';
   if (tipo === 'producao' && pesoBruto && pesoLiquido) {
-    const pb = parseFloat(pesoBruto) || 0;
-    const pl = parseFloat(pesoLiquido) || 0;
-    const pct = pb > 0 ? ((pl/pb)*100).toFixed(0) : '?';
+    const pct = ((parseFloat(pesoLiquido)/parseFloat(pesoBruto))*100).toFixed(0);
     pesoLine = pesoBruto;
-    rendLine = 'Rend: ' + pesoLiquido + ' (' + pct + '%)';
+    rendLine = `Rend: ${pesoLiquido} (${pct}%)`;
   }
 
-  const NL = '\r\n';
+  // TSPL: 50mm x 80mm @ 203dpi = 400 x 640 dots
+  const R = '\r\n'; // terminador obrigatório
+  const W = 400;
+
   let c = '';
+  c += 'SIZE 50 mm, 80 mm' + R;
+  c += 'GAP 3 mm, 0' + R;
+  c += 'DIRECTION 1' + R;
+  c += 'REFERENCE 0,0' + R;
+  c += 'OFFSET 0 mm' + R;
+  c += 'SET PEEL OFF' + R;
+  c += 'SET CUTTER OFF' + R;
+  c += 'CLS' + R;
 
-  // ── Configuração da etiqueta ──────────────────
-  c += 'SIZE 50 mm, 80 mm' + NL;
-  c += 'GAP 3 mm, 0' + NL;
-  c += 'DIRECTION 1' + NL;
-  c += 'REFERENCE 0,0' + NL;
-  c += 'OFFSET 0 mm' + NL;
-  c += 'SET PEEL OFF' + NL;
-  c += 'SET CUTTER OFF' + NL;
-  c += 'CLS' + NL;
+  // Barra topo
+  c += `BAR 0,0,${W},8` + R;
 
-  // ── Topo: barra + DUE + tipo ──────────────────
-  c += 'BAR 0,0,400,8' + NL;
-  // TSPL TEXT: TEXT x,y,"font",rotation,xmult,ymult,"text"
-  // Fontes internas: "0"-"9", "ARIAL.TTF" etc
-  // Usamos fonte "3" (built-in, boa legibilidade)
-  c += 'TEXT 10,12,"3",0,1,1,"DUE"' + NL;
-  c += 'TEXT 260,18,"1",0,1,1,"' + tipoLabel + '"' + NL;
-  c += 'BAR 0,50,400,2' + NL;
+  // DUE + tipo
+  c += `TEXT 10,12,"3",0,1,1,"DUE"` + R;
+  c += `TEXT 200,16,"1",0,1,1,"${tipoLabel}"` + R;
 
-  // ── Produto ───────────────────────────────────
-  const p1 = produto.substring(0, 20);
-  const p2 = produto.length > 20 ? produto.substring(20, 40) : '';
-  c += 'TEXT 10,58,"3",0,1,1,"' + p1 + '"' + NL;
-  if (p2) c += 'TEXT 10,82,"3",0,1,1,"' + p2 + '"' + NL;
-  const yAfterProd = p2 ? 112 : 88;
-  c += 'BAR 0,' + yAfterProd + ',400,1' + NL;
+  // Separador
+  c += `BAR 0,46,${W},2` + R;
 
-  // ── Peso / Qtd ────────────────────────────────
-  let y = yAfterProd + 6;
-  c += 'TEXT 10,' + y + ',"1",0,1,1,"PESO/QTD"' + NL;
-  y += 18;
-  c += 'TEXT 10,' + y + ',"3",0,1,1,"' + pesoLine + '"' + NL;
-  y += 30;
+  // Produto
+  const prodTrunc = produto.length > 20 ? produto.substring(0,20) : produto;
+  c += `TEXT 10,52,"3",0,1,1,"${prodTrunc}"` + R;
 
+  // Sep
+  c += `BAR 0,88,${W},1` + R;
+
+  // Peso
+  c += `TEXT 10,96,"1",0,1,1,"PESO/QTD"` + R;
+  c += `TEXT 10,112,"2",0,1,1,"${pesoLine}"` + R;
+
+  let yPos = 140;
+
+  // Rendimento
   if (rendLine) {
-    c += 'TEXT 10,' + y + ',"2",0,1,1,"' + rendLine + '"' + NL;
-    y += 24;
+    c += `TEXT 10,${yPos},"1",0,1,1,"${rendLine}"` + R;
+    yPos += 22;
   }
+
+  // Fornecedor
   if (fornecedor) {
-    c += 'TEXT 10,' + y + ',"1",0,1,1,"FORN: ' + fornecedor.substring(0,22) + '"' + NL;
-    y += 20;
+    c += `BAR 0,${yPos},${W},1` + R; yPos += 6;
+    c += `TEXT 10,${yPos},"1",0,1,1,"FORN: ${fornecedor.substring(0,18)}"` + R;
+    yPos += 20;
   }
+
+  // Obs
   if (obs) {
-    c += 'TEXT 10,' + y + ',"1",0,1,1,"Obs: ' + obs.substring(0,24) + '"' + NL;
-    y += 20;
+    c += `TEXT 10,${yPos},"1",0,1,1,"Obs: ${obs.substring(0,20)}"` + R;
+    yPos += 20;
   }
 
-  // ── Data prep ─────────────────────────────────
-  c += 'BAR 0,390,400,1' + NL;
-  c += 'TEXT 10,396,"2",0,1,1,"Prep: ' + dataPrep + '  ' + hora + '"' + NL;
+  // Data prep
+  c += `BAR 0,460,${W},1` + R;
+  c += `TEXT 10,468,"1",0,1,1,"PREP: ${dataPrep}  ${hora}"` + R;
 
-  // ── Validade (fundo preto) ────────────────────
-  c += 'BAR 0,422,400,80' + NL;
-  c += 'REVERSE 0,422,400,80' + NL;
-  c += 'TEXT 10,428,"1",0,1,1,"VALIDADE"' + NL;
-  c += 'TEXT 10,446,"3",0,1,1,"' + dataVal + '"' + NL;
+  // Bloco validade invertido
+  c += `BAR 0,494,${W},90` + R;
+  c += `REVERSE 0,494,${W},90` + R;
+  c += `TEXT 10,500,"1",0,1,1,"VALIDADE"` + R;
+  c += `TEXT 10,518,"3",0,1,1,"${dataVal}"` + R;
 
-  // ── Rodapé ────────────────────────────────────
-  c += 'BAR 0,506,400,1' + NL;
-  c += 'TEXT 10,512,"1",0,1,1,"Chef: ' + chef + '   Turno ' + turno + '"' + NL;
+  // Rodapé
+  c += `BAR 0,588,${W},1` + R;
+  c += `TEXT 10,594,"1",0,1,1,"Chef: ${chef}   Turno ${turno}"` + R;
 
-  // ── Imprimir ──────────────────────────────────
-  c += 'PRINT ' + qty + ',1' + NL;
+  c += `PRINT ${qty},1` + R;
 
-  console.log('[TSPL]\\n' + c);
-  return new TextEncoder().encode(c);
+  return c;
 }
 
+function fmt(d) {
+  return d.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'2-digit'});
+}
 
+// ===== BLUETOOTH =====
+const BT_SERVICE   = '000018f0-0000-1000-8000-00805f9b34fb'; // Seagull/TSC service UUID
+const BT_CHAR_WRITE = '00002af1-0000-1000-8000-00805f9b34fb'; // write characteristic
+
+// UUIDs alternativos — impressoras TSC podem usar SPP (Serial Port Profile)
+const SPP_SERVICE  = '00001101-0000-1000-8000-00805f9b34fb';
+
+async function conectarBluetooth() {
+  fecharModal();
+  setBtStatus('connecting');
+
+  try {
+    const device = await navigator.bluetooth.requestDevice({
+      // Aceitar qualquer dispositivo — usuário seleciona na lista
+      acceptAllDevices: true,
+      optionalServices: [
+        BT_SERVICE,
+        SPP_SERVICE,
+        '000018f0-0000-1000-8000-00805f9b34fb',
+        '00001101-0000-1000-8000-00805f9b34fb',
+        '0000ff00-0000-1000-8000-00805f9b34fb',
+        'e7810a71-73ae-499d-8c15-faa9aef0c3f2', // TSC BLE service (alguns modelos)
+      ]
+    });
+
+    S.btDevice = device;
+    device.addEventListener('gattserverdisconnected', onDisconnect);
+
+    showToast('Conectando...', 'warn');
+
+    const server = await device.gatt.connect();
+    let char = null;
+
+    // Tentar encontrar característica de escrita
+    const services = await server.getPrimaryServices();
+    for (const service of services) {
+      try {
+        const chars = await service.getCharacteristics();
+        for (const c of chars) {
+          const props = c.properties;
+          if (props.write || props.writeWithoutResponse) {
+            char = c;
+            break;
+          }
+        }
+        if (char) break;
+      } catch(e) { /* service sem acesso — continuar */ }
+    }
+
+    if (!char) {
+      throw new Error('Característica de escrita não encontrada. A impressora pode não suportar BLE direto.');
+    }
+
+    S.btChar = char;
+    setBtStatus('connected', device.name || 'Impressora');
+    showToast(`✓ Conectado: ${device.name || 'Impressora'}`, 'ok');
+    atualizar();
+
+  } catch(err) {
+    setBtStatus('off');
+    if (err.name === 'NotFoundError') {
+      showToast('Nenhum dispositivo selecionado', 'warn');
+    } else {
+      showToast('Erro: ' + err.message, 'error');
+      console.error(err);
+    }
+  }
+}
+
+function onDisconnect() {
+  S.btChar = null;
+  setBtStatus('off');
+  showToast('Impressora desconectada', 'warn');
+  atualizar();
+}
+
+function toggleBluetooth() {
+  if (!navigator.bluetooth) {
+    document.getElementById('bt-alert').classList.add('show');
+    showToast('Web Bluetooth não suportado neste browser', 'error');
+    return;
+  }
+  if (S.btStatus === 'connected') {
+    // Desconectar
+    if (S.btDevice && S.btDevice.gatt.connected) {
+      S.btDevice.gatt.disconnect();
+    }
+    setBtStatus('off');
+    return;
+  }
+  // Abrir modal
+  document.getElementById('modal-bt').classList.add('show');
+}
+
+function fecharModal() {
+  document.getElementById('modal-bt').classList.remove('show');
+}
+
+function setBtStatus(status, name) {
+  S.btStatus = status;
+  const pill = document.getElementById('bt-pill');
+  const dot  = document.getElementById('bt-dot');
+  const lbl  = document.getElementById('bt-label');
+
+  pill.className = 'bt-pill ' + (status === 'connected' ? 'connected' : status === 'connecting' ? 'connecting' : '');
+  dot.className  = 'bt-dot' + (status === 'connecting' ? ' pulse' : '');
+
+  if (status === 'connected') lbl.textContent = name || 'Conectado';
+  else if (status === 'connecting') lbl.textContent = 'Conectando…';
+  else lbl.textContent = 'Bluetooth';
+}
+
+// ===== ENVIO BLUETOOTH =====
 async function enviarTSPL(tspl) {
   if (!S.btChar) throw new Error('Impressora não conectada');
 
-  const encoder = new TextEncoder();
-  const data = encoder.encode(tspl);
+  const data = new TextEncoder().encode(tspl);
 
-  // PT260/XD210 BLE: chunk máximo seguro = 20 bytes (MTU padrão BLE)
-  // Delay entre chunks: 30ms evita buffer overflow na impressora
+  // BLE MTU padrão = 20 bytes. Chunks maiores causam falha silenciosa.
   const CHUNK = 20;
-  const DELAY = 30;
-
-  console.log('[BLE] Enviando', data.length, 'bytes em chunks de', CHUNK);
+  const DELAY = 30; // ms entre chunks — necessário para buffer da impressora
 
   for (let i = 0; i < data.length; i += CHUNK) {
     const chunk = data.slice(i, i + CHUNK);
-    try {
-      if (S.btChar.properties.writeWithoutResponse) {
-        await S.btChar.writeValueWithoutResponse(chunk);
-      } else {
-        await S.btChar.writeValue(chunk);
-      }
-    } catch(e) {
-      // Se writeWithoutResponse falhou, tentar writeValue
-      try {
-        await S.btChar.writeValue(chunk);
-      } catch(e2) {
-        throw new Error('Falha ao enviar dados: ' + e2.message);
-      }
+    if (S.btChar.properties.writeWithoutResponse) {
+      await S.btChar.writeValueWithoutResponse(chunk);
+    } else {
+      await S.btChar.writeValue(chunk);
     }
     if (i + CHUNK < data.length) await sleep(DELAY);
   }
-  console.log('[BLE] Envio completo');
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ===== TESTE MÍNIMO =====
+// Envia comando TSPL mínimo para verificar se BLE→impressora funciona
+async function imprimirTeste() {
+  if (!S.btChar) { showToast('Impressora não conectada', 'error'); return; }
+  const R = '\r\n';
+  let t = '';
+  t += 'SIZE 50 mm, 80 mm' + R;
+  t += 'GAP 3 mm, 0' + R;
+  t += 'DIRECTION 1' + R;
+  t += 'CLS' + R;
+  t += 'TEXT 10,30,"3",0,1,1,"DUE TESTE"' + R;
+  t += 'TEXT 10,80,"1",0,1,1,"TSPL OK"' + R;
+  t += 'PRINT 1,1' + R;
+  try {
+    showToast('Enviando teste...', 'warn');
+    await enviarTSPL(t);
+    showToast('✓ Teste enviado!', 'ok');
+  } catch(e) {
+    showToast('Erro: ' + e.message, 'error');
+  }
+}
 
 // ===== IMPRIMIR =====
 async function imprimir() {
@@ -1053,6 +1198,10 @@ function atualizar() {
     icon.textContent = '🖨';
   }
 
+  // Mostrar botão de teste quando BLE conectado
+  const btnTeste = document.getElementById('btn-teste');
+  if (btnTeste) btnTeste.style.display = S.btStatus === 'connected' ? 'block' : 'none';
+
   renderPreview();
 }
 
@@ -1123,55 +1272,4 @@ function renderLog() {
         <div class="log-prod">${e.produto}</div>
         <div class="log-meta">${e.hora} · ${e.peso} · Val: ${e.validade} · Chef: ${e.chef} · ${e.qty}×</div>
       </div>
-      <span class="log-tag ${e.tipo}">${e.tipo}</span>
-    </div>
-  `).join('');
-}
-
-function exportCSV() {
-  if (!S.log.length) { showToast('Sem registros', 'warn'); return; }
-  const hoje = new Date().toLocaleDateString('pt-BR');
-  const header = 'Data,Hora,Tipo,Produto,Peso,Validade,Qt,Chef';
-  const rows = S.log.map(e =>
-    `${hoje},${e.hora},${e.tipo},"${e.produto}","${e.peso}",${e.validade},${e.qty},${e.chef}`
-  );
-  const blob = new Blob([[header,...rows].join('\n')], {type:'text/csv'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `DUE_Etiquetas_${hoje.replace(/\//g,'-')}.csv`;
-  a.click();
-}
-
-// ===== TABS =====
-function setTab(nome, el) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('tab-'+nome).classList.add('active');
-}
-
-// ===== TOAST =====
-function showToast(msg, tipo='ok') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show ' + tipo;
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-// ===== INIT =====
-renderCampos();
-atualizar();
-
-// Verificar suporte Bluetooth
-if (!navigator.bluetooth) {
-  document.getElementById('bt-alert').classList.add('show');
-}
-
-// Fechar modal ao clicar fora
-document.getElementById('modal-bt').addEventListener('click', function(e) {
-  if (e.target === this) fecharModal();
-});
-</script>
-</body>
-</html>
+      <span class="log-tag ${e.tipo}"
