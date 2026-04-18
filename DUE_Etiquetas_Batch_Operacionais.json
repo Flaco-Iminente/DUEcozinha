@@ -1,54 +1,402 @@
 [
-  { "produto": "Pannacota", "chef": "BEAT", "tipo": "porcao", "peso": "120g", "storage": "refrig", "qty": 1 },
-  { "produto": "Cheesecake Basco", "chef": "BEAT", "tipo": "porcao", "peso": "150g", "storage": "refrig", "qty": 1 },
-  { "produto": "Ganache Chocolate 70%", "chef": "BEAT", "tipo": "producao", "peso": "500g", "storage": "refrig", "qty": 1 },
-  { "produto": "Gema Curada 48h", "chef": "OZAN", "tipo": "porcao", "peso": "1 unidade", "storage": "refrig", "qty": 2 },
-  { "produto": "Leite de Tigre", "chef": "BEAT", "tipo": "producao", "peso": "300ml", "storage": "refrig", "qty": 1 },
-  { "produto": "Creme de Abacate", "chef": "BEAT", "tipo": "producao", "peso": "400g", "storage": "refrig", "qty": 1 },
-  { "produto": "Creme de Milho", "chef": "BEAT", "tipo": "producao", "peso": "400g", "storage": "refrig", "qty": 1 },
-  { "produto": "Tomate Ralado", "chef": "BEAT", "tipo": "producao", "peso": "300g", "storage": "refrig", "qty": 1 },
-  { "produto": "Tomate Juliene", "chef": "BEAT", "tipo": "producao", "peso": "300g", "storage": "refrig", "qty": 1 },
-  { "produto": "Pesto Sergipano", "chef": "BEAT", "tipo": "producao", "peso": "300ml", "storage": "refrig", "qty": 1 },
-  { "produto": "Tomate Confit", "chef": "BEAT", "tipo": "producao", "peso": "300g", "storage": "refrig", "qty": 1 },
-  { "produto": "Calda de Hibisco", "chef": "BEAT", "tipo": "producao", "peso": "200ml", "storage": "refrig", "qty": 1 },
-  { "produto": "Geleia de Goiaba", "chef": "BEAT", "tipo": "producao", "peso": "300g", "storage": "refrig", "qty": 1 },
-  { "produto": "Picles de Maxixe", "chef": "OZAN", "tipo": "producao", "peso": "500ml", "storage": "refrig", "qty": 1 },
-  { "produto": "Bisque de Crustáceos", "chef": "RAFA", "tipo": "producao", "peso": "1000ml", "storage": "cong", "qty": 1 },
-  { "produto": "Fumet de Peixe", "chef": "RAFA", "tipo": "producao", "peso": "1000ml", "storage": "cong", "qty": 1 },
-  { "produto": "Caldo de Pato", "chef": "RAFA", "tipo": "producao", "peso": "1000ml", "storage": "refrig", "qty": 1 },
-  { "produto": "Fundo Claro", "chef": "RAFA", "tipo": "producao", "peso": "1000ml", "storage": "cong", "qty": 1 },
-  { "produto": "Molho de Tomate DUE", "chef": "FRAN", "tipo": "producao", "peso": "800ml", "storage": "refrig", "qty": 1 },
-  { "produto": "Demi-glace DUE", "chef": "RAFA", "tipo": "producao", "peso": "500ml", "storage": "cong", "qty": 1 },
-  { "produto": "Purê de Mandioquinha", "chef": "FRAN", "tipo": "producao", "peso": "500g", "storage": "refrig", "qty": 1 },
-  { "produto": "Cebola Branca Juliene", "chef": "BEAT", "tipo": "porcao", "peso": "300g", "storage": "refrig", "qty": 1 },
-  { "produto": "Cebola Roxa Brunoise", "chef": "BEAT", "tipo": "porcao", "peso": "300g", "storage": "refrig", "qty": 1 },
-  { "produto": "Miolo de Cebola Roxa", "chef": "BEAT", "tipo": "porcao", "peso": "200g", "storage": "refrig", "qty": 1 },
-  { "produto": "Alho Picado", "chef": "BEAT", "tipo": "porcao", "peso": "150g", "storage": "refrig", "qty": 1 },
-  { "produto": "Brotos / Microgreens", "chef": "BEAT", "tipo": "porcao", "peso": "80g", "storage": "refrig", "qty": 1 },
-  { "produto": "Feijão Verde", "chef": "BEAT", "tipo": "porcao", "peso": "300g", "storage": "refrig", "qty": 1 },
-  { "produto": "Rabanete", "chef": "BEAT", "tipo": "porcao", "peso": "250g", "storage": "refrig", "qty": 1 },
-  { "produto": "Cubos de Queijo Coalho", "chef": "BEAT", "tipo": "porcao", "peso": "300g", "storage": "refrig", "qty": 1 },
-  { "produto": "Cascas de Parmesão", "chef": "BEAT", "tipo": "porcao", "peso": "200g", "storage": "refrig", "qty": 1 },
-  { "produto": "Queijo Parmesão Ralado", "chef": "BEAT", "tipo": "porcao", "peso": "150g", "storage": "refrig", "qty": 1 },
-  { "produto": "Queijo Parmesão Inteiro", "chef": "BEAT", "tipo": "porcao", "peso": "500g", "storage": "refrig", "qty": 1 },
-  { "produto": "Polvo Cozido", "chef": "RAFA", "tipo": "porcao", "peso": "150g", "storage": "refrig", "qty": 1 },
-  { "produto": "Camarão com Rabo", "chef": "RAFA", "tipo": "entrada", "peso": "500g", "storage": "refrig", "qty": 1 },
-  { "produto": "Camarão sem Rabo", "chef": "RAFA", "tipo": "entrada", "peso": "500g", "storage": "refrig", "qty": 1 },
-  { "produto": "Lula", "chef": "RAFA", "tipo": "entrada", "peso": "500g", "storage": "refrig", "qty": 1 },
-  { "produto": "Mexilhão", "chef": "RAFA", "tipo": "entrada", "peso": "500g", "storage": "refrig", "qty": 1 },
-  { "produto": "Robalo com Pele", "chef": "RAFA", "tipo": "entrada", "peso": "800g", "storage": "refrig", "qty": 1 },
-  { "produto": "Tilápia", "chef": "RAFA", "tipo": "entrada", "peso": "800g", "storage": "refrig", "qty": 1 },
-  { "produto": "Pato Confit", "chef": "RAFA", "tipo": "porcao", "peso": "150g", "storage": "refrig", "qty": 1 },
-  { "produto": "Costela Desfiada", "chef": "RAFA", "tipo": "porcao", "peso": "200g", "storage": "refrig", "qty": 1 },
-  { "produto": "Bacon em Cubos", "chef": "RAFA", "tipo": "porcao", "peso": "150g", "storage": "refrig", "qty": 1 },
-  { "produto": "Charque em Cubos", "chef": "RAFA", "tipo": "porcao", "peso": "150g", "storage": "refrig", "qty": 1 },
-  { "produto": "Filé Alto", "chef": "RAFA", "tipo": "porcao", "peso": "200g", "storage": "refrig", "qty": 1 },
-  { "produto": "Flat Iron", "chef": "RAFA", "tipo": "porcao", "peso": "200g", "storage": "refrig", "qty": 1 },
-  { "produto": "Carré de Cordeiro", "chef": "RAFA", "tipo": "porcao", "peso": "280g", "storage": "refrig", "qty": 1 },
-  { "produto": "Pato Cru", "chef": "RAFA", "tipo": "porcao", "peso": "250g", "storage": "refrig", "qty": 1 },
-  { "produto": "Carne de Sol DUE", "chef": "RAFA", "tipo": "porcao", "peso": "180g", "storage": "refrig", "qty": 1 },
-  { "produto": "Suspiro Artesanal", "chef": "BEAT", "tipo": "porcao", "peso": "100g", "storage": "refrig", "qty": 1 },
-  { "produto": "Crispy de Couve", "chef": "BEAT", "tipo": "porcao", "peso": "80g", "storage": "refrig", "qty": 1 },
-  { "produto": "Chips de Batata Doce", "chef": "BEAT", "tipo": "porcao", "peso": "80g", "storage": "refrig", "qty": 1 },
-  { "produto": "Torradas", "chef": "BEAT", "tipo": "porcao", "peso": "100g", "storage": "refrig", "qty": 1 }
+  {
+    "produto": "Pannacota de Baunilha",
+    "chef": "BEAT",
+    "tipo": "producao",
+    "peso": "120g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Cheesecake Basco",
+    "chef": "BEAT",
+    "tipo": "producao",
+    "peso": "150g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Ganache Chocolate 70%",
+    "chef": "BEAT",
+    "tipo": "producao",
+    "peso": "500g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Gema Curada 48h",
+    "chef": "OZAN",
+    "tipo": "porcao",
+    "peso": "1 unidade",
+    "storage": "refrig",
+    "qty": 2
+  },
+  {
+    "produto": "Leite de Tigre",
+    "chef": "BEAT",
+    "tipo": "producao",
+    "peso": "300ml",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Pesto Sergipano",
+    "chef": "BEAT",
+    "tipo": "producao",
+    "peso": "300ml",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Tomates Confitados",
+    "chef": "BEAT",
+    "tipo": "producao",
+    "peso": "300g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Molho de Tomate DUE",
+    "chef": "FRAN",
+    "tipo": "producao",
+    "peso": "800ml",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Purê de Mandioquinha",
+    "chef": "FRAN",
+    "tipo": "producao",
+    "peso": "500g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Picles de Maxixe",
+    "chef": "OZAN",
+    "tipo": "producao",
+    "peso": "500ml",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Bisque de Crustáceos",
+    "chef": "RAFA",
+    "tipo": "producao",
+    "peso": "1000ml",
+    "storage": "cong",
+    "qty": 1
+  },
+  {
+    "produto": "Fumet de Peixe",
+    "chef": "RAFA",
+    "tipo": "producao",
+    "peso": "1000ml",
+    "storage": "cong",
+    "qty": 1
+  },
+  {
+    "produto": "Caldo de Camarão",
+    "chef": "RAFA",
+    "tipo": "producao",
+    "peso": "1000ml",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Caldo de Legumes",
+    "chef": "RAFA",
+    "tipo": "producao",
+    "peso": "1000ml",
+    "storage": "cong",
+    "qty": 1
+  },
+  {
+    "produto": "Demi-glace DUE",
+    "chef": "RAFA",
+    "tipo": "producao",
+    "peso": "500ml",
+    "storage": "cong",
+    "qty": 1
+  },
+  {
+    "produto": "Ragù de Costela",
+    "chef": "RAFA",
+    "tipo": "producao",
+    "peso": "800ml",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Pappardelle Artesanal",
+    "chef": "OZAN",
+    "tipo": "porcao",
+    "peso": "400g",
+    "storage": "refrig",
+    "qty": 2
+  },
+  {
+    "produto": "Polvo Cozido",
+    "chef": "RAFA",
+    "tipo": "porcao",
+    "peso": "150g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Polvo Porcionado",
+    "chef": "RAFA",
+    "tipo": "porcao",
+    "peso": "150g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Camarão",
+    "chef": "RAFA",
+    "tipo": "porcao",
+    "peso": "120g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Robalo",
+    "chef": "RAFA",
+    "tipo": "porcao",
+    "peso": "200g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Confit de Pato",
+    "chef": "RAFA",
+    "tipo": "porcao",
+    "peso": "150g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Costela Desfiada",
+    "chef": "RAFA",
+    "tipo": "porcao",
+    "peso": "200g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Charque Dessalgado",
+    "chef": "RAFA",
+    "tipo": "porcao",
+    "peso": "150g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Filé Mignon",
+    "chef": "RAFA",
+    "tipo": "porcao",
+    "peso": "180g",
+    "storage": "cong",
+    "qty": 3
+  },
+  {
+    "produto": "Flat Iron",
+    "chef": "RAFA",
+    "tipo": "porcao",
+    "peso": "200g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Carré de Cordeiro",
+    "chef": "RAFA",
+    "tipo": "porcao",
+    "peso": "280g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Peito de Frango",
+    "chef": "RAFA",
+    "tipo": "porcao",
+    "peso": "200g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Carne de Sol DUE",
+    "chef": "RAFA",
+    "tipo": "porcao",
+    "peso": "180g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Xerém Cremoso DUE",
+    "chef": "BEAT",
+    "tipo": "producao",
+    "peso": "400g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Mousseline Banana",
+    "chef": "BEAT",
+    "tipo": "producao",
+    "peso": "500g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Arroz Feijão Verde",
+    "chef": "BEAT",
+    "tipo": "producao",
+    "peso": "500g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Chips Batata Doce",
+    "chef": "BEAT",
+    "tipo": "porcao",
+    "peso": "80g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Crocante de Tapioca",
+    "chef": "BEAT",
+    "tipo": "porcao",
+    "peso": "80g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Tuille Açúcar Mascavo",
+    "chef": "BEAT",
+    "tipo": "porcao",
+    "peso": "80g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Fonduta de Parmesão",
+    "chef": "BEAT",
+    "tipo": "producao",
+    "peso": "300g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Aioli / Lactonese",
+    "chef": "BEAT",
+    "tipo": "producao",
+    "peso": "400g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Azeite Verde DUE",
+    "chef": "FRAN",
+    "tipo": "producao",
+    "peso": "500ml",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Azeite Vermelho DUE",
+    "chef": "FRAN",
+    "tipo": "producao",
+    "peso": "500ml",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Confit de Laranja",
+    "chef": "BEAT",
+    "tipo": "producao",
+    "peso": "300g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Teriaki de Hibisco",
+    "chef": "BEAT",
+    "tipo": "producao",
+    "peso": "300ml",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Massa do Taco",
+    "chef": "BEAT",
+    "tipo": "producao",
+    "peso": "500g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Massa Tempurá",
+    "chef": "BEAT",
+    "tipo": "producao",
+    "peso": "500g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Pão de Batata DUE",
+    "chef": "BEAT",
+    "tipo": "producao",
+    "peso": "500g",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Polvo Fresco",
+    "chef": "RAFA",
+    "tipo": "entrada",
+    "peso": "5kg",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Peixe Fresco",
+    "chef": "RAFA",
+    "tipo": "entrada",
+    "peso": "8kg",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Crustáceos Frescos",
+    "chef": "RAFA",
+    "tipo": "entrada",
+    "peso": "5kg",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Carnes (genérico)",
+    "chef": "RAFA",
+    "tipo": "entrada",
+    "peso": "10kg",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Laticínios",
+    "chef": "BEAT",
+    "tipo": "entrada",
+    "peso": "5kg",
+    "storage": "refrig",
+    "qty": 1
+  },
+  {
+    "produto": "Hortifruti",
+    "chef": "BEAT",
+    "tipo": "entrada",
+    "peso": "10kg",
+    "storage": "refrig",
+    "qty": 1
+  }
 ]
