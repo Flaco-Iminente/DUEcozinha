@@ -555,8 +555,15 @@ main {
   <!-- TAB LOTE -->
   <div class="tab-content" id="tab-lote">
     <div>
-      <div class="section-label">Impressão em Lote — JSON</div>
-      <div class="card">
+      <div class="section-label">Impressão em Lote</div>
+      <!-- Tabs JSON / CSV -->
+      <div style="display:flex;gap:6px;margin-bottom:12px">
+        <button id="lote-tab-json" type="button" onclick="switchLoteTab('json')" style="flex:1;padding:10px 6px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:#1a1a1a;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📋 JSON</button>
+        <button id="lote-tab-csv" type="button" onclick="switchLoteTab('csv')" style="flex:1;padding:10px 6px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">🔗 CSV / Sheets</button>
+      </div>
+
+      <!-- Painel JSON (existente) -->
+      <div id="lote-painel-json" class="card">
         <div class="field">
           <label>Cole aqui o JSON com a lista de etiquetas</label>
           <textarea id="lote-json" placeholder='[{"produto":"Polvo Cozido","chef":"RAFA","tipo":"porcao","peso":"150g","qty":1},...]' style="min-height:140px;font-family:monospace;font-size:12px;resize:vertical;line-height:1.5;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);width:100%;box-sizing:border-box;-webkit-appearance:none"></textarea>
@@ -565,6 +572,19 @@ main {
           <button type="button" onclick="validarLote()" style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:12px 10px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;min-height:48px;transition:all 0.2s">✓ Validar</button>
           <button type="button" onclick="importarJSON()" style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:12px 10px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;min-height:48px;transition:all 0.2s">📥 Arquivo</button>
         </div>
+      </div>
+
+      <!-- Painel CSV -->
+      <div id="lote-painel-csv" class="card" style="display:none">
+        <div class="field">
+          <label style="font-size:11px;color:var(--muted);margin-bottom:8px;display:block">URL do Google Sheets (Publicar na web → CSV)</label>
+          <input id="lote-csv-url" type="url" placeholder="https://docs.google.com/spreadsheets/d/.../pub?...output=csv"
+            style="width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;box-sizing:border-box;-webkit-appearance:none;font-family:inherit">
+        </div>
+        <button type="button" onclick="carregarCSVURL()" style="width:100%;background:#6b9e7a;border:none;color:#fff;padding:12px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;min-height:48px;margin-bottom:10px">🔗 Carregar da URL</button>
+        <div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:10px">— ou —</div>
+        <input id="lote-csv-file" type="file" accept=".csv" onchange="carregarCSVArquivo(this)"
+          style="width:100%;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;box-sizing:border-box;font-family:inherit">
       </div>
     </div>
 
@@ -670,6 +690,10 @@ const CONFIG = {
     { nome: 'Massa do Taco', cat: 'molhos', tipo: 'producao', refrig: 2, congel: 30 },
     { nome: 'Massa Tempurá', cat: 'molhos', tipo: 'producao', refrig: 0, semCongel: true },
     { nome: 'Pão de Batata DUE', cat: 'molhos', tipo: 'producao', refrig: 2, congel: 30 },
+    { nome: 'Camarão Confitado', cat: 'molhos', tipo: 'producao', refrig: 2, congel: 30 },
+    { nome: 'Vinagrete Tropical DUE', cat: 'molhos', tipo: 'producao', refrig: 3, semCongel: true },
+    { nome: 'Tucupi', cat: 'molhos', tipo: 'producao', refrig: 5, congel: 60 },
+    { nome: 'Molho Béchamel', cat: 'molhos', tipo: 'producao', refrig: 3, congel: 30 },
 
     // Proteínas Porcionadas
     { nome: 'Polvo Cozido', cat: 'proteinas', tipo: 'porcao', refrig: 3, congel: 60 },
@@ -694,11 +718,15 @@ const CONFIG = {
     { nome: 'Purê de Mandioquinha', cat: 'pures', tipo: 'producao', refrig: 2, congel: 30 },
     { nome: 'Mousseline Banana', cat: 'pures', tipo: 'producao', refrig: 2, congel: 30 },
     { nome: 'Arroz Feijão Verde', cat: 'pures', tipo: 'producao', refrig: 2, congel: 30 },
+    { nome: 'Creme de Abacate', cat: 'pures', tipo: 'producao', refrig: 1, semCongel: true },
 
     // Crocantes
     { nome: 'Chips Batata Doce', cat: 'crocantes', tipo: 'porcao', refrig: 2, semCongel: true },
     { nome: 'Crocante de Tapioca', cat: 'crocantes', tipo: 'porcao', refrig: 2, semCongel: true },
     { nome: 'Tuille Açúcar Mascavo', cat: 'crocantes', tipo: 'porcao', refrig: 2, semCongel: true },
+    { nome: 'Sagu Crocante', cat: 'crocantes', tipo: 'producao', refrig: 3, semCongel: true },
+    { nome: 'Suspiro Artesanal', cat: 'crocantes', tipo: 'producao', refrig: 5, semCongel: true },
+    { nome: 'Manjericão Desidratado', cat: 'crocantes', tipo: 'producao', refrig: 7, semCongel: true },
 
     // Entradas (Recebimento)
     { nome: 'Polvo Fresco', cat: 'entrada', tipo: 'entrada', refrig: 1, congel: 90 },
@@ -707,6 +735,10 @@ const CONFIG = {
     { nome: 'Carnes (genérico)', cat: 'entrada', tipo: 'entrada', refrig: 2, congel: 90 },
     { nome: 'Laticínios', cat: 'entrada', tipo: 'entrada', refrig: 3, semCongel: true },
     { nome: 'Hortifruti', cat: 'entrada', tipo: 'entrada', refrig: 3, semCongel: true },
+    { nome: 'Ostra', cat: 'entrada', tipo: 'entrada', refrig: 5, semCongel: true },
+    { nome: 'Lambreta', cat: 'entrada', tipo: 'entrada', refrig: 1, semCongel: true },
+    { nome: 'Lula', cat: 'entrada', tipo: 'entrada', refrig: 2, congel: 30 },
+    { nome: 'Mexilhão', cat: 'entrada', tipo: 'entrada', refrig: 1, congel: 30 },
   ],
   catEmoji: {
     tecnicas: '⭐', fundos: '🍲', molhos: '🫙', proteinas: '🥩',
@@ -1338,6 +1370,73 @@ function exportCSV() {
   a.href = URL.createObjectURL(blob);
   a.download = 'DUE_log_' + new Date().toISOString().slice(0,10) + '.csv';
   a.click();
+}
+
+// ===== CSV IMPORT (LOTE) =====
+function switchLoteTab(tab) {
+  document.getElementById('lote-painel-json').style.display = tab === 'json' ? 'block' : 'none';
+  document.getElementById('lote-painel-csv').style.display  = tab === 'csv'  ? 'block' : 'none';
+  const btnJ = document.getElementById('lote-tab-json');
+  const btnC = document.getElementById('lote-tab-csv');
+  btnJ.style.background  = tab === 'json' ? 'var(--accent)'   : 'var(--surface2)';
+  btnJ.style.color       = tab === 'json' ? '#1a1a1a'         : 'var(--muted)';
+  btnJ.style.borderColor = tab === 'json' ? 'var(--accent)'   : 'var(--border)';
+  btnC.style.background  = tab === 'csv'  ? 'var(--accent)'   : 'var(--surface2)';
+  btnC.style.color       = tab === 'csv'  ? '#1a1a1a'         : 'var(--muted)';
+  btnC.style.borderColor = tab === 'csv'  ? 'var(--accent)'   : 'var(--border)';
+}
+
+async function carregarCSVURL() {
+  const url = document.getElementById('lote-csv-url').value.trim();
+  if (!url) { showToast('Cole a URL do Sheets', 'warn'); return; }
+  showToast('Carregando…');
+  try {
+    const proxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+    const res = await fetch(proxy);
+    if (!res.ok) throw new Error('Falha na URL');
+    parsearCSVMobile(await res.text());
+  } catch(e) {
+    showToast('Erro: tente o arquivo CSV', 'error');
+  }
+}
+
+function carregarCSVArquivo(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => parsearCSVMobile(e.target.result);
+  reader.readAsText(file, 'UTF-8');
+}
+
+function parsearCSVMobile(text) {
+  const linhas = text.trim().split(/\r?\n/);
+  const header = linhas[0].toLowerCase().split(',').map(h => h.trim().replace(/"/g,''));
+  const iP = header.indexOf('produto'), iC = header.indexOf('chef'),
+        iT = header.indexOf('tipo'),    iW = header.indexOf('peso'),
+        iS = header.indexOf('storage'), iQ = header.indexOf('qty');
+  if (iP === -1) { showToast('CSV sem coluna "produto"', 'error'); return; }
+
+  const nomesLower = CONFIG.produtos.map(p => p.nome.toLowerCase().trim());
+  const validos = [], erros = [];
+  linhas.slice(1).forEach((linha, i) => {
+    if (!linha.trim()) return;
+    const cols = linha.split(',').map(c => c.trim().replace(/^"|"$/g,''));
+    const nome = cols[iP] || '';
+    const idx = nomesLower.indexOf(nome.toLowerCase().trim());
+    if (idx === -1) { erros.push(nome); return; }
+    const prod = CONFIG.produtos[idx];
+    validos.push({
+      produto: prod.nome, chef: cols[iC] || 'CHEF',
+      tipo: cols[iT] || prod.tipo, peso: cols[iW] || '—',
+      storage: cols[iS] || 'refrig', qty: parseInt(cols[iQ]) || 1
+    });
+  });
+
+  if (!validos.length) { showToast('Nenhum produto válido no CSV', 'error'); return; }
+  S_lote = validos;
+  renderLotePreview();
+  const msg = erros.length ? `✓ ${validos.length} ok · ${erros.length} erro(s)` : `✓ ${validos.length} itens carregados`;
+  showToast(msg, erros.length ? 'warn' : 'ok');
 }
 
 // ===== LOTE (BATCH PRINTING) =====
