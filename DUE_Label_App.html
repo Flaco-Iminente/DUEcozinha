@@ -408,20 +408,20 @@
   }
 
   .label-produto {
-    padding: 8px 7px 6px;
-    font-size: 16px;
+    padding: 6px 7px 4px;
+    font-size: 14px;
     font-weight: 700;
-    line-height: 1.25;
+    line-height: 1.2;
     color: #000;
     border-bottom: 1px solid #eee;
   }
 
   .label-body {
     flex: 1;
-    padding: 6px 7px;
+    padding: 5px 7px;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 4px;
   }
 
   .label-row {
@@ -459,7 +459,7 @@
   .label-validade-block {
     background: #111;
     color: white;
-    padding: 6px 7px;
+    padding: 5px 7px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -492,7 +492,7 @@
   .label-footer {
     display: flex;
     justify-content: space-between;
-    padding: 4px 7px;
+    padding: 3px 7px;
     border-top: 1px solid #eee;
     background: #fafafa;
   }
@@ -811,6 +811,7 @@
       <div>
         <span class="log-count" id="log-count">0 impressões</span>
         <button class="btn-secondary" style="width:auto; display:inline-block; padding:6px 14px; margin:0 0 0 8px; font-size:11px" onclick="exportarCSV()">⬇ Exportar CSV</button>
+        <button class="btn-secondary" style="width:auto; display:inline-block; padding:6px 14px; margin:0 0 0 8px; font-size:11px; background:var(--accent2); color:#fff; border-color:var(--accent2)" onclick="abrirModalBatch()">📥 Importar Batch</button>
       </div>
     </div>
     <div class="log-table-wrap">
@@ -893,6 +894,10 @@ const CONFIG = {
     { nome: 'Massa do Taco', cat: 'molhos', tipo: 'producao', refrig: 2, congel: 30 },
     { nome: 'Massa Tempurá', cat: 'molhos', tipo: 'producao', refrig: 0, semCongel: true },
     { nome: 'Pão de Batata DUE', cat: 'molhos', tipo: 'producao', refrig: 2, congel: 30 },
+    { nome: 'Camarão Confitado', cat: 'molhos', tipo: 'producao', refrig: 2, congel: 30 },
+    { nome: 'Vinagrete Tropical DUE', cat: 'molhos', tipo: 'producao', refrig: 3, semCongel: true },
+    { nome: 'Tucupi', cat: 'molhos', tipo: 'producao', refrig: 5, congel: 60 },
+    { nome: 'Molho Béchamel', cat: 'molhos', tipo: 'producao', refrig: 3, congel: 30 },
 
     // Proteínas Porcionadas
     { nome: 'Polvo Cozido', cat: 'proteinas', tipo: 'porcao', refrig: 3, congel: 60 },
@@ -917,11 +922,15 @@ const CONFIG = {
     { nome: 'Purê de Mandioquinha', cat: 'pures', tipo: 'producao', refrig: 2, congel: 30 },
     { nome: 'Mousseline Banana', cat: 'pures', tipo: 'producao', refrig: 2, congel: 30 },
     { nome: 'Arroz Feijão Verde', cat: 'pures', tipo: 'producao', refrig: 2, congel: 30 },
+    { nome: 'Creme de Abacate', cat: 'pures', tipo: 'producao', refrig: 1, semCongel: true },
 
     // Crocantes
     { nome: 'Chips Batata Doce', cat: 'crocantes', tipo: 'porcao', refrig: 2, semCongel: true },
     { nome: 'Crocante de Tapioca', cat: 'crocantes', tipo: 'porcao', refrig: 2, semCongel: true },
     { nome: 'Tuille Açúcar Mascavo', cat: 'crocantes', tipo: 'porcao', refrig: 2, semCongel: true },
+    { nome: 'Sagu Crocante', cat: 'crocantes', tipo: 'producao', refrig: 3, semCongel: true },
+    { nome: 'Suspiro Artesanal', cat: 'crocantes', tipo: 'producao', refrig: 5, semCongel: true },
+    { nome: 'Manjericão Desidratado', cat: 'crocantes', tipo: 'producao', refrig: 7, semCongel: true },
 
     // Entradas (Recebimento)
     { nome: 'Polvo Fresco', cat: 'entrada', tipo: 'entrada', refrig: 1, congel: 90 },
@@ -930,6 +939,10 @@ const CONFIG = {
     { nome: 'Carnes (genérico)', cat: 'entrada', tipo: 'entrada', refrig: 2, congel: 90 },
     { nome: 'Laticínios', cat: 'entrada', tipo: 'entrada', refrig: 3, semCongel: true },
     { nome: 'Hortifruti', cat: 'entrada', tipo: 'entrada', refrig: 3, semCongel: true },
+    { nome: 'Ostra', cat: 'entrada', tipo: 'entrada', refrig: 5, semCongel: true },
+    { nome: 'Lambreta', cat: 'entrada', tipo: 'entrada', refrig: 1, semCongel: true },
+    { nome: 'Lula', cat: 'entrada', tipo: 'entrada', refrig: 2, congel: 30 },
+    { nome: 'Mexilhão', cat: 'entrada', tipo: 'entrada', refrig: 1, congel: 30 },
   ],
 };
 
@@ -1510,6 +1523,261 @@ initChefBar();
 initProdutoDropdown();
 renderCampos();
 atualizar();
+</script>
+<!-- ===== MODAL BATCH ===== -->
+<div id="modal-batch" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:9999; align-items:center; justify-content:center;">
+  <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:28px; width:min(520px,94vw); max-height:90vh; overflow-y:auto">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
+      <span style="font-size:16px; font-weight:600; color:var(--text)">Importar Batch CSV</span>
+      <button onclick="fecharModalBatch()" style="background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer">✕</button>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:flex; gap:8px; margin-bottom:20px">
+      <button id="tab-url" onclick="switchTab('url')" style="flex:1; padding:8px; border-radius:8px; border:1px solid var(--accent); background:var(--accent); color:#1a1a1a; font-size:13px; font-weight:600; cursor:pointer">🔗 URL Google Sheets</button>
+      <button id="tab-file" onclick="switchTab('file')" style="flex:1; padding:8px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:var(--muted); font-size:13px; cursor:pointer">📁 Arquivo CSV</button>
+    </div>
+
+    <!-- Painel URL -->
+    <div id="painel-url">
+      <p style="font-size:12px; color:var(--muted); margin-bottom:12px">Cole a URL de publicação do Google Sheets.<br>Sheets → Arquivo → Publicar na web → CSV → Copiar link</p>
+      <input id="batch-url" type="text" placeholder="https://docs.google.com/spreadsheets/d/.../pub?...output=csv"
+        style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px; margin-bottom:12px">
+      <button onclick="carregarURL()" style="width:100%; padding:10px; background:var(--accent2); border:none; border-radius:8px; color:#fff; font-size:14px; font-weight:600; cursor:pointer">Carregar da URL</button>
+    </div>
+
+    <!-- Painel Arquivo -->
+    <div id="painel-file" style="display:none">
+      <p style="font-size:12px; color:var(--muted); margin-bottom:12px">Selecione o arquivo CSV exportado do Google Sheets ou gerado pelo sistema.</p>
+      <input id="batch-file" type="file" accept=".csv" onchange="carregarArquivo(this)"
+        style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px">
+    </div>
+
+    <!-- Preview -->
+    <div id="batch-preview" style="display:none; margin-top:20px">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+        <span id="batch-preview-count" style="font-size:13px; color:var(--accent); font-weight:600"></span>
+        <span id="batch-erros" style="font-size:12px; color:var(--warn)"></span>
+      </div>
+      <div id="batch-preview-lista" style="max-height:220px; overflow-y:auto; font-size:12px; color:var(--muted); background:var(--surface2); border-radius:8px; padding:10px"></div>
+      <button onclick="confirmarBatch()" style="width:100%; margin-top:14px; padding:12px; background:var(--accent); border:none; border-radius:8px; color:#1a1a1a; font-size:15px; font-weight:700; cursor:pointer">🖨️ Enviar para fila de impressão</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FILA BATCH ===== -->
+<div id="fila-section" style="display:none; grid-column:1/-1; margin-top:8px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px">
+    <div>
+      <span style="font-size:15px; font-weight:600; color:var(--text)">Fila de Impressão Batch</span>
+      <span id="fila-count" style="margin-left:10px; background:var(--accent); color:#1a1a1a; font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px"></span>
+    </div>
+    <div style="display:flex; gap:8px">
+      <button onclick="imprimirBatch()" style="padding:8px 18px; background:var(--accent); border:none; border-radius:8px; color:#1a1a1a; font-size:13px; font-weight:700; cursor:pointer">🖨️ Imprimir Todos</button>
+      <button onclick="limparFila()" style="padding:8px 14px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--muted); font-size:13px; cursor:pointer">✕ Limpar</button>
+    </div>
+  </div>
+  <div id="fila-lista" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:8px; max-height:300px; overflow-y:auto"></div>
+</div>
+
+<!-- ÁREA IMPRESSÃO BATCH (oculta) -->
+<div id="batch-print-area" style="display:none"></div>
+
+<script>
+// ===== BATCH IMPORT =====
+let batchFila = [];
+let batchPendente = [];
+
+function abrirModalBatch() {
+  document.getElementById('modal-batch').style.display = 'flex';
+  document.getElementById('batch-preview').style.display = 'none';
+}
+function fecharModalBatch() {
+  document.getElementById('modal-batch').style.display = 'none';
+}
+function switchTab(tab) {
+  document.getElementById('painel-url').style.display  = tab === 'url'  ? 'block' : 'none';
+  document.getElementById('painel-file').style.display = tab === 'file' ? 'block' : 'none';
+  document.getElementById('tab-url').style.background  = tab === 'url'  ? 'var(--accent)' : 'var(--surface2)';
+  document.getElementById('tab-url').style.color       = tab === 'url'  ? '#1a1a1a' : 'var(--muted)';
+  document.getElementById('tab-url').style.borderColor = tab === 'url'  ? 'var(--accent)' : 'var(--border)';
+  document.getElementById('tab-file').style.background  = tab === 'file' ? 'var(--accent)' : 'var(--surface2)';
+  document.getElementById('tab-file').style.color       = tab === 'file' ? '#1a1a1a' : 'var(--muted)';
+  document.getElementById('tab-file').style.borderColor = tab === 'file' ? 'var(--accent)' : 'var(--border)';
+}
+
+async function carregarURL() {
+  const url = document.getElementById('batch-url').value.trim();
+  if (!url) { showToast('Cole a URL do Google Sheets'); return; }
+  showToast('Carregando…');
+  try {
+    // Google Sheets publish URL suporta CORS nativo
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+    let res = await fetch(proxyUrl);
+    if (!res.ok) throw new Error('Erro ao buscar URL');
+    const text = await res.text();
+    parsearCSV(text);
+  } catch(e) {
+    showToast('Falha ao carregar URL — tente o arquivo CSV');
+    console.error(e);
+  }
+}
+
+function carregarArquivo(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => parsearCSV(e.target.result);
+  reader.readAsText(file, 'UTF-8');
+}
+
+function parsearCSV(text) {
+  const linhas = text.trim().split(/\r?\n/);
+  const header = linhas[0].toLowerCase().split(',').map(h => h.trim().replace(/"/g,''));
+  const idxProd    = header.indexOf('produto');
+  const idxChef    = header.indexOf('chef');
+  const idxTipo    = header.indexOf('tipo');
+  const idxPeso    = header.indexOf('peso');
+  const idxStorage = header.indexOf('storage');
+  const idxQty     = header.indexOf('qty');
+
+  if (idxProd === -1) { showToast('CSV sem coluna "produto"'); return; }
+
+  const nomesProdutos = CONFIG.produtos.map(p => p.nome.toLowerCase().trim());
+  const validos = [], erros = [];
+
+  linhas.slice(1).forEach((linha, i) => {
+    if (!linha.trim()) return;
+    const cols = linha.split(',').map(c => c.trim().replace(/^"|"$/g,''));
+    const nomeProd = cols[idxProd] || '';
+    const idx = nomesProdutos.indexOf(nomeProd.toLowerCase().trim());
+    if (idx === -1) {
+      erros.push(`Linha ${i+2}: "${nomeProd}" não encontrado`);
+      return;
+    }
+    const prod = CONFIG.produtos[idx];
+    validos.push({
+      produto: prod.nome,
+      cat:     prod.cat,
+      tipo:    cols[idxTipo]    || prod.tipo,
+      peso:    cols[idxPeso]    || '—',
+      storage: cols[idxStorage] || 'refrig',
+      qty:     parseInt(cols[idxQty]) || 1,
+      chef:    cols[idxChef]    || 'CHEF',
+      refrig:  prod.refrig,
+      congel:  prod.congel || null,
+      semCongel: prod.semCongel || false,
+    });
+  });
+
+  batchPendente = validos;
+  const preview = document.getElementById('batch-preview');
+  preview.style.display = 'block';
+  document.getElementById('batch-preview-count').textContent = `${validos.length} etiquetas válidas`;
+  document.getElementById('batch-erros').textContent = erros.length ? `${erros.length} erro(s)` : '';
+  const lista = document.getElementById('batch-preview-lista');
+  lista.innerHTML = validos.map(v =>
+    `<div style="padding:3px 0; border-bottom:1px solid var(--border)">${v.chef} · <strong style="color:var(--text)">${v.produto}</strong> · ${v.peso} · ${v.storage}</div>`
+  ).join('') + (erros.length ? '<hr style="border-color:var(--border);margin:6px 0">' + erros.map(e => `<div style="color:var(--warn)">${e}</div>`).join('') : '');
+}
+
+function confirmarBatch() {
+  if (!batchPendente.length) return;
+  batchFila = [...batchPendente];
+  fecharModalBatch();
+  renderizarFila();
+  showToast(`${batchFila.length} itens na fila de impressão`);
+}
+
+function renderizarFila() {
+  const sec = document.getElementById('fila-section');
+  sec.style.display = batchFila.length ? 'block' : 'none';
+  document.getElementById('fila-count').textContent = `${batchFila.length} etiquetas`;
+  document.getElementById('fila-lista').innerHTML = batchFila.map((item, i) => {
+    const validade = calcularValidade(item);
+    return `<div style="background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px; font-size:12px">
+      <div style="font-weight:600; color:var(--text); margin-bottom:4px">${item.produto}</div>
+      <div style="color:var(--muted)">${item.chef} · ${item.peso} · ${item.storage === 'refrig' ? '❄️ Refrig' : '🧊 Cong'}</div>
+      <div style="color:var(--accent); margin-top:2px">Vence: ${validade}</div>
+    </div>`;
+  }).join('');
+}
+
+function calcularValidade(item) {
+  const dias = item.storage === 'cong' ? (item.congel || 0) : (item.refrig || 0);
+  if (dias === 0) return 'Uso imediato';
+  const d = new Date();
+  d.setDate(d.getDate() + dias);
+  return d.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit', year:'2-digit'});
+}
+
+function limparFila() {
+  batchFila = [];
+  renderizarFila();
+  showToast('Fila limpa');
+}
+
+function imprimirBatch() {
+  if (!batchFila.length) { showToast('Fila vazia'); return; }
+  const area = document.getElementById('batch-print-area');
+  area.innerHTML = batchFila.map(item => {
+    const validade = calcularValidade(item);
+    const armazLabel = item.storage === 'cong' ? 'CONG' : 'REFR';
+    const tipoLabel  = item.tipo === 'entrada' ? 'ENTRADA' : item.tipo === 'porcao' ? 'PORÇÃO' : 'PRODUÇÃO';
+    const cat = CONFIG.categorias[item.cat];
+    return `<div class="batch-label">
+      <div class="bl-marca">DUE · ${cat ? cat.emoji + ' ' + cat.nome : item.cat.toUpperCase()}</div>
+      <div class="bl-produto">${item.produto}</div>
+      <div class="bl-detalhe">${tipoLabel} · ${item.peso} · ${armazLabel}</div>
+      <div class="bl-validade">Vence: ${validade}</div>
+      <div class="bl-chef">Chef: ${item.chef}</div>
+    </div>`;
+  }).join('');
+
+  // CSS de impressão batch
+  const style = `
+    <style>
+      @media print {
+        body > *:not(#batch-print-area) { display:none !important; }
+        #batch-print-area { display:block !important; }
+      }
+      #batch-print-area { font-family:'Segoe UI',sans-serif; }
+      .batch-label {
+        width:50mm; min-height:80mm;
+        border:1px dashed #999;
+        padding:6mm 4mm;
+        margin:2mm;
+        display:inline-block;
+        vertical-align:top;
+        page-break-inside:avoid;
+        box-sizing:border-box;
+      }
+      .bl-marca    { font-size:7pt; color:#888; margin-bottom:2mm; }
+      .bl-produto  { font-size:12pt; font-weight:700; margin-bottom:2mm; line-height:1.2; }
+      .bl-detalhe  { font-size:8pt; color:#555; margin-bottom:2mm; }
+      .bl-validade { font-size:10pt; font-weight:700; border:1px solid #333; padding:1mm 2mm; display:inline-block; margin-bottom:2mm; }
+      .bl-chef     { font-size:8pt; color:#888; }
+    </style>`;
+  area.insertAdjacentHTML('afterbegin', style);
+  area.style.display = 'block';
+
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => { area.style.display = 'none'; area.innerHTML = ''; }, 1000);
+  }, 200);
+
+  // Registra no log
+  const hora = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  batchFila.forEach(item => {
+    state.log.push({
+      hora, tipo: item.tipo, produto: item.produto,
+      peso: item.peso, storage: item.storage,
+      validade: calcularValidade(item), qty: item.qty, chef: item.chef
+    });
+  });
+  renderizarLog();
+  showToast(`🖨️ ${batchFila.length} etiquetas enviadas para impressão`);
+}
 </script>
 </body>
 </html>
