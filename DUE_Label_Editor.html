@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DUE · Editor de Etiquetas</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f0f; --surface:#1a1a1a; --surface2:#242424; --border:#2e2e2e;
+  --text:#f0ece4; --muted:#888; --accent:#c8a96e; --accent2:#6b9e7a;
+  --danger:#c0392b; --ok:#27ae60; --radius:10px;
+  --font:'Segoe UI',system-ui,sans-serif;
+  /* 50mm × 80mm @ 5.67px/mm ≈ 283×453px — escalado pra edição */
+  --lw:283px; --lh:453px;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 18px;display:flex;align-items:center;gap:16px;flex-shrink:0}
+header h1{font-size:15px;font-weight:700;color:var(--accent)}
+header span{font-size:11px;color:var(--muted)}
+.header-actions{margin-left:auto;display:flex;gap:8px}
+
+/* layout */
+.workspace{display:flex;flex:1;overflow:hidden}
+.panel-left{width:200px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0}
+.canvas-area{flex:1;display:flex;align-items:center;justify-content:center;background:#111;overflow:auto;position:relative}
+.panel-right{width:220px;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0}
+
+/* painéis */
+.panel-title{font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--muted);padding:12px 14px 6px;text-transform:uppercase}
+.elem-btn{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;border:none;background:none;color:var(--text);width:100%;text-align:left;font-family:inherit;font-size:12px;border-bottom:1px solid var(--border);transition:background .15s}
+.elem-btn:hover{background:var(--surface2)}
+.elem-btn .ico{font-size:16px;width:22px;text-align:center}
+.elem-btn .lbl{line-height:1.2}
+.elem-btn .sub{font-size:10px;color:var(--muted)}
+
+/* canvas / label */
+.label-canvas{
+  width:var(--lw);height:var(--lh);
+  background:#fff;
+  position:relative;
+  box-shadow:0 0 0 1px #555, 0 8px 40px rgba(0,0,0,.8);
+  overflow:hidden;
+  user-select:none;
+}
+.label-canvas.snap-grid{background-image:repeating-linear-gradient(#eee 0 1px,transparent 1px 5.67px),repeating-linear-gradient(90deg,#eee 0 1px,transparent 1px 5.67px)}
+
+/* elementos no canvas */
+.le{
+  position:absolute;cursor:move;
+  border:1px solid transparent;
+  min-width:20px;min-height:14px;
+  display:flex;align-items:center;
+  line-height:1.2;
+  transition:border-color .1s;
+  white-space:pre-wrap;word-break:break-word;
+}
+.le:hover{border-color:#aaa}
+.le.selected{border-color:var(--accent)!important;outline:none}
+.le.selected .resize-handle{display:block}
+.le .text-inner{width:100%;overflow:hidden;pointer-events:none;color:#111}
+.le.le-linha{border-top:1px solid #111;border-bottom:none;border-left:none;border-right:none;min-height:2px;cursor:ns-resize}
+.le.selected.le-linha{border-color:var(--accent)!important}
+
+/* resize handle */
+.resize-handle{display:none;position:absolute;right:-4px;bottom:-4px;width:9px;height:9px;background:var(--accent);border-radius:2px;cursor:se-resize;z-index:10}
+
+/* ruler */
+.ruler-h,.ruler-v{position:absolute;background:var(--surface2);font-size:9px;color:var(--muted);display:flex;align-items:flex-end;padding:0 2px}
+.ruler-h{top:0;left:20px;right:0;height:20px}
+.ruler-v{top:20px;left:0;bottom:0;width:20px;flex-direction:column;align-items:flex-end}
+
+/* painel de propriedades */
+.prop-group{padding:10px 14px;border-bottom:1px solid var(--border)}
+.prop-label{font-size:10px;color:var(--muted);margin-bottom:5px;font-weight:600}
+.prop-row{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.prop-input{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;padding:5px 8px;width:100%;font-family:inherit}
+.prop-input:focus{outline:none;border-color:var(--accent)}
+.prop-btn-row{display:flex;gap:4px}
+.prop-btn{flex:1;padding:5px 4px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;cursor:pointer;font-family:inherit;transition:background .15s}
+.prop-btn:hover,.prop-btn.active{background:var(--accent);color:#1a1a1a;border-color:var(--accent)}
+
+/* botões header */
+.hbtn{padding:7px 14px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;cursor:pointer;font-family:inherit;transition:all .15s}
+.hbtn:hover{background:var(--surface)}
+.hbtn.primary{background:var(--accent);color:#1a1a1a;border-color:var(--accent)}
+.hbtn.primary:hover{opacity:.9}
+.hbtn.success{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+
+/* toast */
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999}
+#toast.show{opacity:1}
+
+/* modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:8888;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;width:min(480px,94vw);max-height:80vh;overflow-y:auto}
+.modal h3{font-size:14px;font-weight:600;margin-bottom:14px;color:var(--accent)}
+.modal textarea{width:100%;min-height:120px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:11px;font-family:monospace;padding:10px;resize:vertical}
+.modal-btns{display:flex;gap:8px;margin-top:14px}
+.modal-btns button{flex:1;padding:9px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-family:inherit;font-size:13px}
+.modal-btns button.primary{background:var(--accent);color:#1a1a1a;border-color:var(--accent)}
+
+/* preview etiqueta real */
+.label-preview-wrap{margin-top:10px;padding:10px;background:#222;border-radius:8px;text-align:center}
+.label-preview-wrap img{max-width:100%;border:1px solid #444}
+
+@media print{
+  body>*{display:none!important}
+  #print-frame{display:block!important;position:fixed;inset:0;width:50mm;height:80mm}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>DUE · Editor de Etiquetas</h1>
+  <span>50mm × 80mm · térmica</span>
+  <div class="header-actions">
+    <button class="hbtn" onclick="toggleGrid()" id="btn-grid">⊞ Grid</button>
+    <button class="hbtn" onclick="limparCanvas()">🗑 Limpar</button>
+    <button class="hbtn" onclick="carregarTemplate()">📂 Carregar</button>
+    <button class="hbtn success" onclick="exportarTemplate()">💾 Salvar Template</button>
+    <button class="hbtn primary" onclick="abrirPreview()">👁 Preview / Imprimir</button>
+  </div>
+</header>
+
+<div class="workspace">
+
+  <!-- PAINEL ESQUERDO — elementos -->
+  <div class="panel-left">
+    <div class="panel-title">Campos automáticos</div>
+    <button class="elem-btn" onclick="addElem('campo','produto')">
+      <span class="ico">📦</span><div class="lbl">Produto<div class="sub">nome do item</div></div>
+    </button>
+    <button class="elem-btn" onclick="addElem('campo','validade')">
+      <span class="ico">📅</span><div class="lbl">Validade<div class="sub">data calculada</div></div>
+    </button>
+    <button class="elem-btn" onclick="addElem('campo','chef')">
+      <span class="ico">👤</span><div class="lbl">Chef<div class="sub">código do responsável</div></div>
+    </button>
+    <button class="elem-btn" onclick="addElem('campo','storage')">
+      <span class="ico">❄️</span><div class="lbl">Armazenamento<div class="sub">REFR / CONG</div></div>
+    </button>
+    <button class="elem-btn" onclick="addElem('campo','tipo')">
+      <span class="ico">🔖</span><div class="lbl">Tipo<div class="sub">PRODUÇÃO / PORÇÃO</div></div>
+    </button>
+    <button class="elem-btn" onclick="addElem('campo','peso')">
+      <span class="ico">⚖️</span><div class="lbl">Peso / Qtd<div class="sub">gramagem</div></div>
+    </button>
+    <button class="elem-btn" onclick="addElem('campo','producao')">
+      <span class="ico">🕐</span><div class="lbl">Data Produção<div class="sub">hoje</div></div>
+    </button>
+    <button class="elem-btn" onclick="addElem('campo','marca')">
+      <span class="ico">⭐</span><div class="lbl">Marca DUE<div class="sub">logotipo texto</div></div>
+    </button>
+    <div class="panel-title" style="margin-top:4px">Elementos fixos</div>
+    <button class="elem-btn" onclick="addElem('texto','')">
+      <span class="ico">T</span><div class="lbl">Texto livre<div class="sub">clique duplo para editar</div></div>
+    </button>
+    <button class="elem-btn" onclick="addElem('linha','')">
+      <span class="ico">—</span><div class="lbl">Linha separadora</div>
+    </button>
+    <button class="elem-btn" onclick="addElem('qr','')">
+      <span class="ico">▦</span><div class="lbl">QR / Barcode<div class="sub">placeholder</div></div>
+    </button>
+  </div>
+
+  <!-- CANVAS -->
+  <div class="canvas-area" id="canvas-area">
+    <div class="label-canvas" id="label-canvas">
+      <!-- elementos inseridos aqui -->
+    </div>
+  </div>
+
+  <!-- PAINEL DIREITO — propriedades -->
+  <div class="panel-right">
+    <div class="panel-title">Propriedades</div>
+    <div id="no-sel" style="padding:20px 14px;font-size:12px;color:var(--muted);text-align:center">
+      Selecione um elemento no canvas para editar suas propriedades.
+    </div>
+
+    <div id="props" style="display:none">
+      <div class="prop-group">
+        <div class="prop-label">Conteúdo</div>
+        <input id="prop-content" class="prop-input" placeholder="Texto ou rótulo" oninput="updateProp('content',this.value)">
+        <div style="font-size:10px;color:var(--muted);margin-top:4px" id="prop-field-hint"></div>
+      </div>
+
+      <div class="prop-group">
+        <div class="prop-label">Tipografia</div>
+        <div class="prop-row">
+          <input id="prop-size" type="number" min="6" max="72" value="12" class="prop-input" style="width:70px" oninput="updateProp('fontSize',+this.value)">
+          <span style="font-size:11px;color:var(--muted)">pt</span>
+          <select id="prop-weight" class="prop-input" style="flex:1" onchange="updateProp('fontWeight',this.value)">
+            <option value="400">Normal</option>
+            <option value="600">Semi-bold</option>
+            <option value="700">Bold</option>
+            <option value="900">Black</option>
+          </select>
+        </div>
+        <div class="prop-btn-row">
+          <button class="prop-btn" onclick="updateProp('align','left')" id="btn-left">⬤ Esq</button>
+          <button class="prop-btn" onclick="updateProp('align','center')" id="btn-center">⬤ Centro</button>
+          <button class="prop-btn" onclick="updateProp('align','right')" id="btn-dir">⬤ Dir</button>
+        </div>
+      </div>
+
+      <div class="prop-group">
+        <div class="prop-label">Posição & Tamanho</div>
+        <div class="prop-row">
+          <span style="font-size:10px;color:var(--muted);width:14px">X</span>
+          <input id="prop-x" type="number" class="prop-input" style="width:70px" oninput="updateProp('x',+this.value)">
+          <span style="font-size:10px;color:var(--muted);width:14px">Y</span>
+          <input id="prop-y" type="number" class="prop-input" style="width:70px" oninput="updateProp('y',+this.value)">
+        </div>
+        <div class="prop-row">
+          <span style="font-size:10px;color:var(--muted);width:14px">W</span>
+          <input id="prop-w" type="number" class="prop-input" style="width:70px" oninput="updateProp('w',+this.value)">
+        </div>
+      </div>
+
+      <div class="prop-group">
+        <div class="prop-label">Cor do texto</div>
+        <div class="prop-btn-row">
+          <button class="prop-btn" onclick="updateProp('color','#111111')" style="background:#fff;color:#111;border-color:#ccc">Preto</button>
+          <button class="prop-btn" onclick="updateProp('color','#555555')" style="background:#eee;color:#555">Cinza</button>
+          <button class="prop-btn" onclick="updateProp('color','#ffffff')" style="background:#111;color:#fff">Branco</button>
+        </div>
+        <div class="prop-btn-row" style="margin-top:4px">
+          <button class="prop-btn" onclick="updateProp('bgColor','transparent')" style="background:repeating-conic-gradient(#ccc 0% 25%,#fff 0% 50%) 0/10px 10px">Sem fundo</button>
+          <button class="prop-btn" onclick="updateProp('bgColor','#111111')" style="background:#111;color:#fff">Fundo preto</button>
+        </div>
+      </div>
+
+      <div class="prop-group">
+        <button onclick="deletarSelecionado()" style="width:100%;padding:8px;background:var(--danger);border:none;border-radius:7px;color:#fff;font-size:12px;cursor:pointer;font-family:inherit">🗑 Excluir elemento</button>
+      </div>
+    </div>
+
+    <!-- info template -->
+    <div style="margin-top:auto;padding:12px 14px;border-top:1px solid var(--border)">
+      <div class="prop-label">Elementos no canvas</div>
+      <div id="elem-count" style="font-size:20px;font-weight:700;color:var(--accent)">0</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:6px">50mm × 80mm · térmica direta</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PREVIEW -->
+<div class="modal-bg" id="modal-preview">
+  <div class="modal" style="width:min(380px,94vw)">
+    <h3>Preview da Etiqueta</h3>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:12px">Dados de exemplo para visualização</p>
+    <div id="preview-container" style="background:#fff;width:283px;height:453px;position:relative;margin:0 auto;overflow:hidden;box-shadow:0 0 0 1px #ccc"></div>
+    <div class="modal-btns">
+      <button onclick="fecharPreview()">Fechar</button>
+      <button class="primary" onclick="imprimirLabel()">🖨️ Imprimir</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SALVAR/CARREGAR -->
+<div class="modal-bg" id="modal-json">
+  <div class="modal">
+    <h3 id="modal-json-title">Template JSON</h3>
+    <textarea id="modal-json-area" placeholder="Cole o JSON do template aqui..."></textarea>
+    <div class="modal-btns">
+      <button onclick="fecharModalJSON()">Cancelar</button>
+      <button class="primary" id="modal-json-ok" onclick="confirmarJSON()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ===== ESTADO =====
+let elementos = [];
+let selId = null;
+let nextId = 1;
+let isDragging = false, isResizing = false;
+let dragOffX = 0, dragOffY = 0;
+let snapGrid = false;
+let modalMode = ''; // 'salvar' | 'carregar'
+
+// Dados de exemplo para preview
+const EXEMPLO = {
+  produto: 'Bisque de Crustáceos',
+  validade: '30/04/26',
+  chef: 'RAFA',
+  storage: 'REFR',
+  tipo: 'PRODUÇÃO',
+  peso: '1000ml',
+  producao: new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'}),
+  marca: '⭐ DUE'
+};
+
+const CAMPO_LABELS = {
+  produto:'Produto (auto)', validade:'Validade (auto)', chef:'Chef (auto)',
+  storage:'Armazenamento (auto)', tipo:'Tipo (auto)', peso:'Peso/Qtd (auto)',
+  producao:'Data Produção (auto)', marca:'Marca DUE (fixo)'
+};
+
+// ===== CANVAS =====
+const canvas = document.getElementById('label-canvas');
+
+function snap(v){return snapGrid ? Math.round(v/5.67)*5.67 : v}
+
+function addElem(tipo, fieldType) {
+  const id = 'e' + nextId++;
+  const defaults = {
+    texto:  {content:'Texto livre', fontSize:12, fontWeight:'400', color:'#111', bgColor:'transparent', w:200, h:22},
+    campo:  {content:'', fontSize:12, fontWeight:'400', color:'#111', bgColor:'transparent', w:260, h:22},
+    linha:  {content:'', fontSize:1, fontWeight:'400', color:'#111', bgColor:'transparent', w:260, h:4},
+    qr:     {content:'QR', fontSize:10, fontWeight:'400', color:'#111', bgColor:'transparent', w:60, h:60},
+  };
+  const d = defaults[tipo] || defaults.texto;
+
+  // Font size defaults por campo
+  const fontSizeMap = {produto:16, validade:18, chef:10, storage:11, tipo:10, peso:12, producao:10, marca:13};
+  const fontWeightMap = {produto:'700', validade:'700', marca:'700', storage:'600'};
+
+  const el = {
+    id, tipo, fieldType,
+    x:14, y:14 + (elementos.length * 30),
+    w: d.w, h: d.h,
+    content: fieldType ? (CAMPO_LABELS[fieldType]||fieldType) : d.content,
+    fontSize: fontSizeMap[fieldType] || d.fontSize,
+    fontWeight: fontWeightMap[fieldType] || d.fontWeight,
+    align: 'left', color: d.color, bgColor: d.bgColor,
+  };
+  // Ajuste por campo especial
+  if (fieldType === 'marca') { el.align = 'center'; el.x = 11; }
+  if (fieldType === 'validade') { el.align = 'center'; el.x = 11; }
+
+  elementos.push(el);
+  renderCanvas();
+  selecionarElem(id);
+  atualizarContador();
+  toast('Elemento adicionado');
+}
+
+function renderCanvas() {
+  // Preserva posições se elementos já existem no DOM
+  canvas.innerHTML = '';
+  elementos.forEach(el => {
+    const div = document.createElement('div');
+    div.className = 'le' + (el.tipo === 'linha' ? ' le-linha' : '');
+    if (el.id === selId) div.classList.add('selected');
+    div.id = el.id;
+    div.style.cssText = `
+      left:${el.x}px; top:${el.y}px; width:${el.w}px; min-height:${el.h}px;
+      font-size:${el.fontSize}pt; font-weight:${el.fontWeight};
+      text-align:${el.align}; color:${el.color}; background:${el.bgColor};
+    `;
+    if (el.tipo === 'linha') {
+      div.style.borderTopColor = el.color;
+      div.style.width = el.w + 'px';
+    } else {
+      const inner = document.createElement('div');
+      inner.className = 'text-inner';
+      inner.style.textAlign = el.align;
+      if (el.tipo === 'qr') {
+        inner.innerHTML = '<div style="width:'+Math.min(el.w,el.h)+'px;height:'+Math.min(el.w,el.h)+'px;border:2px solid #111;display:flex;align-items:center;justify-content:center;font-size:8pt;color:#555">▦ QR</div>';
+      } else {
+        inner.textContent = el.content;
+      }
+      div.appendChild(inner);
+    }
+    // resize handle
+    const rh = document.createElement('div');
+    rh.className = 'resize-handle';
+    div.appendChild(rh);
+
+    // eventos drag
+    div.addEventListener('mousedown', onElemMouseDown);
+    rh.addEventListener('mousedown', onResizeMouseDown);
+    // double click para editar texto
+    div.addEventListener('dblclick', (e) => {
+      e.stopPropagation();
+      if (el.tipo === 'texto') iniciarEdicaoTexto(el, div);
+    });
+
+    canvas.appendChild(div);
+  });
+}
+
+function onElemMouseDown(e) {
+  if (e.target.classList.contains('resize-handle')) return;
+  e.preventDefault();
+  const div = e.currentTarget;
+  selecionarElem(div.id);
+  isDragging = true;
+  const el = getElem(div.id);
+  const rect = canvas.getBoundingClientRect();
+  dragOffX = e.clientX - rect.left - el.x;
+  dragOffY = e.clientY - rect.top  - el.y;
+  document.addEventListener('mousemove', onMouseMove);
+  document.addEventListener('mouseup', onMouseUp);
+}
+
+function onResizeMouseDown(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  isResizing = true;
+  const div = e.currentTarget.parentElement;
+  selecionarElem(div.id);
+  document.addEventListener('mousemove', onResizeMove);
+  document.addEventListener('mouseup', onMouseUp);
+}
+
+function onMouseMove(e) {
+  if (!isDragging || !selId) return;
+  const el = getElem(selId);
+  const rect = canvas.getBoundingClientRect();
+  el.x = snap(Math.max(0, Math.min(e.clientX - rect.left - dragOffX, canvas.offsetWidth - el.w)));
+  el.y = snap(Math.max(0, Math.min(e.clientY - rect.top  - dragOffY, canvas.offsetHeight - el.h)));
+  const div = document.getElementById(selId);
+  div.style.left = el.x + 'px';
+  div.style.top  = el.y + 'px';
+  atualizarPropXY(el);
+}
+
+function onResizeMove(e) {
+  if (!isResizing || !selId) return;
+  const el = getElem(selId);
+  const rect = document.getElementById(selId).getBoundingClientRect();
+  const canvasRect = canvas.getBoundingClientRect();
+  el.w = snap(Math.max(30, e.clientX - rect.left));
+  el.h = snap(Math.max(12, e.clientY - rect.top));
+  const div = document.getElementById(selId);
+  div.style.width    = el.w + 'px';
+  div.style.minHeight = el.h + 'px';
+  document.getElementById('prop-w').value = Math.round(el.w);
+}
+
+function onMouseUp() {
+  isDragging = false; isResizing = false;
+  document.removeEventListener('mousemove', onMouseMove);
+  document.removeEventListener('mousemove', onResizeMove);
+  document.removeEventListener('mouseup', onMouseUp);
+}
+
+canvas.addEventListener('mousedown', (e) => {
+  if (e.target === canvas) { selecionarElem(null); }
+});
+
+function iniciarEdicaoTexto(el, div) {
+  const inp = document.createElement('input');
+  inp.value = el.content;
+  inp.style.cssText = `position:absolute;left:0;top:0;width:100%;font-size:${el.fontSize}pt;font-weight:${el.fontWeight};border:none;outline:none;background:rgba(255,255,230,.9);color:#111;padding:0;font-family:inherit;text-align:${el.align}`;
+  div.appendChild(inp);
+  inp.focus(); inp.select();
+  const finish = () => {
+    el.content = inp.value;
+    renderCanvas();
+    selecionarElem(el.id);
+    document.getElementById('prop-content').value = el.content;
+  };
+  inp.addEventListener('blur', finish);
+  inp.addEventListener('keydown', e => { if(e.key==='Enter'||e.key==='Escape') inp.blur(); });
+}
+
+function selecionarElem(id) {
+  selId = id;
+  renderCanvas();
+  const el = id ? getElem(id) : null;
+  document.getElementById('no-sel').style.display = el ? 'none' : 'block';
+  document.getElementById('props').style.display   = el ? 'block' : 'none';
+  if (el) {
+    document.getElementById('prop-content').value = el.content;
+    document.getElementById('prop-content').disabled = el.tipo === 'campo';
+    document.getElementById('prop-size').value   = el.fontSize;
+    document.getElementById('prop-weight').value = el.fontWeight;
+    document.getElementById('prop-x').value = Math.round(el.x);
+    document.getElementById('prop-y').value = Math.round(el.y);
+    document.getElementById('prop-w').value = Math.round(el.w);
+    document.getElementById('prop-field-hint').textContent = el.fieldType ? '⚡ Campo automático — preenchido na impressão' : '';
+    ['left','center','dir'].forEach(a => document.getElementById('btn-'+a).classList.remove('active'));
+    const aMap = {left:'left',center:'center',right:'dir'};
+    if(document.getElementById('btn-'+(aMap[el.align]||'left'))) document.getElementById('btn-'+(aMap[el.align]||'left')).classList.add('active');
+  }
+}
+
+function getElem(id){ return elementos.find(e => e.id === id) }
+
+function updateProp(prop, val) {
+  const el = getElem(selId);
+  if (!el) return;
+  el[prop] = val;
+  if (prop === 'x') { document.getElementById(el.id).style.left = val+'px'; return; }
+  if (prop === 'y') { document.getElementById(el.id).style.top  = val+'px'; return; }
+  renderCanvas();
+  selecionarElem(selId);
+}
+
+function atualizarPropXY(el) {
+  document.getElementById('prop-x').value = Math.round(el.x);
+  document.getElementById('prop-y').value = Math.round(el.y);
+}
+
+function deletarSelecionado() {
+  if (!selId) return;
+  elementos = elementos.filter(e => e.id !== selId);
+  selId = null;
+  renderCanvas();
+  selecionarElem(null);
+  atualizarContador();
+  toast('Elemento removido');
+}
+
+function atualizarContador() {
+  document.getElementById('elem-count').textContent = elementos.length;
+}
+
+// ===== GRID =====
+function toggleGrid() {
+  snapGrid = !snapGrid;
+  canvas.classList.toggle('snap-grid', snapGrid);
+  document.getElementById('btn-grid').classList.toggle('active', snapGrid);
+  toast(snapGrid ? 'Grid ativado (snap 1mm)' : 'Grid desativado');
+}
+
+// ===== LIMPAR =====
+function limparCanvas() {
+  if (!elementos.length || confirm('Limpar todos os elementos?')) {
+    elementos = []; selId = null;
+    renderCanvas(); selecionarElem(null); atualizarContador();
+    toast('Canvas limpo');
+  }
+}
+
+// ===== TEMPLATE JSON =====
+function exportarTemplate() {
+  const json = JSON.stringify({
+    _meta: { versao:'1.0', criado: new Date().toISOString(), app:'DUE Label Editor' },
+    elementos
+  }, null, 2);
+  const blob = new Blob([json], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'DUE_Label_Template_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  toast('Template salvo!');
+}
+
+function carregarTemplate() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = e => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        elementos = data.elementos || data;
+        nextId = Math.max(...elementos.map(e => parseInt(e.id.slice(1))||0), 0) + 1;
+        selId = null;
+        renderCanvas(); selecionarElem(null); atualizarContador();
+        toast('Template carregado — ' + elementos.length + ' elementos');
+      } catch(err) { toast('JSON inválido'); }
+    };
+    reader.readAsText(e.target.files[0]);
+  };
+  input.click();
+}
+
+function fecharModalJSON() { document.getElementById('modal-json').classList.remove('open'); }
+function confirmarJSON() {
+  try {
+    const data = JSON.parse(document.getElementById('modal-json-area').value);
+    elementos = data.elementos || data;
+    renderCanvas(); selecionarElem(null); atualizarContador();
+    fecharModalJSON(); toast('Template importado');
+  } catch(e) { toast('JSON inválido'); }
+}
+
+// ===== PREVIEW =====
+function abrirPreview() {
+  const container = document.getElementById('preview-container');
+  container.innerHTML = '';
+  elementos.forEach(el => {
+    const div = document.createElement('div');
+    div.style.cssText = `
+      position:absolute;left:${el.x}px;top:${el.y}px;width:${el.w}px;
+      font-size:${el.fontSize}pt;font-weight:${el.fontWeight};text-align:${el.align};
+      color:${el.color};background:${el.bgColor};line-height:1.3;
+      ${el.tipo==='linha'?'border-top:1px solid '+el.color+';height:1px;':''}
+    `;
+    if (el.tipo !== 'linha') {
+      const txt = el.fieldType ? (EXEMPLO[el.fieldType] || el.content) : el.content;
+      div.textContent = txt;
+    }
+    container.appendChild(div);
+  });
+  document.getElementById('modal-preview').classList.add('open');
+}
+
+function fecharPreview() { document.getElementById('modal-preview').classList.remove('open'); }
+
+function imprimirLabel() {
+  const container = document.getElementById('preview-container');
+  const printWin = window.open('', '_blank', 'width=300,height=500');
+  printWin.document.write(`<!DOCTYPE html><html><head><style>
+    @page{size:50mm 80mm;margin:0}
+    body{margin:0;padding:0;width:50mm;height:80mm;overflow:hidden;position:relative}
+    *{box-sizing:border-box}
+  </style></head><body>${container.outerHTML.replace(/position:absolute/g,'position:absolute')}</body></html>`);
+  printWin.document.close();
+  printWin.focus();
+  setTimeout(() => { printWin.print(); printWin.close(); }, 400);
+}
+
+// ===== TOAST =====
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ===== TEMPLATE PADRÃO DUE =====
+function carregarPadraoDUE() {
+  elementos = [
+    {id:'e1',tipo:'campo',fieldType:'marca',   x:11,y:8,  w:261,h:18, fontSize:10,fontWeight:'700',align:'center',color:'#111',bgColor:'transparent',content:'⭐ DUE'},
+    {id:'e2',tipo:'linha',fieldType:'',        x:11,y:30, w:261,h:4,  fontSize:1, fontWeight:'400',align:'left',  color:'#111',bgColor:'transparent',content:''},
+    {id:'e3',tipo:'campo',fieldType:'produto', x:11,y:38, w:261,h:48, fontSize:16,fontWeight:'700',align:'left',  color:'#111',bgColor:'transparent',content:'[Produto]'},
+    {id:'e4',tipo:'campo',fieldType:'tipo',    x:11,y:90, w:130,h:16, fontSize:9, fontWeight:'400',align:'left',  color:'#555',bgColor:'transparent',content:'[Tipo]'},
+    {id:'e5',tipo:'campo',fieldType:'peso',    x:141,y:90,w:131,h:16, fontSize:9, fontWeight:'400',align:'right', color:'#555',bgColor:'transparent',content:'[Peso]'},
+    {id:'e6',tipo:'linha',fieldType:'',        x:11,y:112,w:261,h:4,  fontSize:1, fontWeight:'400',align:'left',  color:'#ccc',bgColor:'transparent',content:''},
+    {id:'e7',tipo:'campo',fieldType:'storage', x:11,y:120,w:80, h:22, fontSize:11,fontWeight:'700',align:'left',  color:'#111',bgColor:'transparent',content:'[Armaz]'},
+    {id:'e8',tipo:'campo',fieldType:'validade',x:11,y:148,w:261,h:32, fontSize:22,fontWeight:'700',align:'center',color:'#111',bgColor:'transparent',content:'[Validade]'},
+    {id:'e9',tipo:'texto',fieldType:'',        x:11,y:182,w:261,h:14, fontSize:8, fontWeight:'400',align:'center',color:'#888',bgColor:'transparent',content:'Vence em:'},
+    {id:'e10',tipo:'linha',fieldType:'',       x:11,y:200,w:261,h:4,  fontSize:1, fontWeight:'400',align:'left',  color:'#ccc',bgColor:'transparent',content:''},
+    {id:'e11',tipo:'campo',fieldType:'producao',x:11,y:208,w:130,h:16,fontSize:9,fontWeight:'400',align:'left',  color:'#888',bgColor:'transparent',content:'[Produção]'},
+    {id:'e12',tipo:'campo',fieldType:'chef',   x:141,y:208,w:131,h:16,fontSize:9,fontWeight:'600',align:'right', color:'#333',bgColor:'transparent',content:'[Chef]'},
+  ];
+  nextId = 13;
+  selId = null;
+  renderCanvas(); selecionarElem(null); atualizarContador();
+  toast('Template padrão DUE carregado!');
+}
+
+// Init — carrega template padrão
+carregarPadraoDUE();
+</script>
+</body>
+</html>

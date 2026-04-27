@@ -812,6 +812,7 @@
         <span class="log-count" id="log-count">0 impressões</span>
         <button class="btn-secondary" style="width:auto; display:inline-block; padding:6px 14px; margin:0 0 0 8px; font-size:11px" onclick="exportarCSV()">⬇ Exportar CSV</button>
         <button class="btn-secondary" style="width:auto; display:inline-block; padding:6px 14px; margin:0 0 0 8px; font-size:11px; background:var(--accent2); color:#fff; border-color:var(--accent2)" onclick="abrirModalBatch()">📥 Importar Batch</button>
+        <button class="btn-secondary" style="width:auto; display:inline-block; padding:6px 14px; margin:0 0 0 8px; font-size:11px; background:#7b5ea7; color:#fff; border-color:#7b5ea7" onclick="abrirCustom()">✏️ Etiqueta Livre</button>
       </div>
     </div>
     <div class="log-table-wrap">
@@ -1506,6 +1507,87 @@ function exportarCSV() {
   showToast('CSV exportado!');
 }
 
+// ===== ETIQUETA PERSONALIZADA =====
+function abrirCustom() {
+  document.getElementById('modal-custom').style.display = 'flex';
+  atualizarPreviewCustom();
+}
+function fecharCustom() { document.getElementById('modal-custom').style.display = 'none'; }
+
+function toggleValCustom() {
+  const tipo = document.getElementById('cu-val-tipo').value;
+  document.getElementById('cu-val-dias-wrap').style.display = tipo === 'dias'  ? 'block' : 'none';
+  document.getElementById('cu-val-data-wrap').style.display = tipo === 'data'  ? 'block' : 'none';
+  atualizarPreviewCustom();
+}
+
+function calcularValCustom() {
+  const tipo = document.getElementById('cu-val-tipo').value;
+  if (tipo === 'imediato') return 'USO IMEDIATO';
+  if (tipo === 'data') {
+    const v = document.getElementById('cu-val-data').value;
+    return v ? new Date(v+'T12:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'}) : '—';
+  }
+  const dias = parseInt(document.getElementById('cu-val-dias').value) || 1;
+  const d = new Date(); d.setDate(d.getDate() + dias);
+  return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'});
+}
+
+function atualizarPreviewCustom() {
+  const prod    = document.getElementById('cu-produto').value  || 'Produto';
+  const detalhe = document.getElementById('cu-detalhe').value  || '';
+  const chef    = document.getElementById('cu-chef').value;
+  const peso    = document.getElementById('cu-peso').value     || '';
+  const obs     = document.getElementById('cu-obs').value      || '';
+  const storage = document.getElementById('cu-storage').value;
+  const validade = calcularValCustom();
+  const storageMap = {refrig:'❄️ REFRIGERADO', cong:'🧊 CONGELADO', amb:'🌡️ TEMP. AMBIENTE'};
+
+  document.getElementById('cu-prev-produto').textContent  = prod;
+  document.getElementById('cu-prev-detalhe').textContent  = detalhe;
+  document.getElementById('cu-prev-meta').textContent     = [peso, chef].filter(Boolean).join(' · ');
+  document.getElementById('cu-prev-storage').textContent  = storageMap[storage] || storage;
+  document.getElementById('cu-prev-validade').textContent = validade;
+  document.getElementById('cu-prev-obs').textContent      = obs;
+}
+
+function imprimirCustom() {
+  const prod    = document.getElementById('cu-produto').value;
+  if (!prod.trim()) { showToast('Informe o nome do produto'); return; }
+  const detalhe = document.getElementById('cu-detalhe').value;
+  const chef    = document.getElementById('cu-chef').value;
+  const peso    = document.getElementById('cu-peso').value;
+  const obs     = document.getElementById('cu-obs').value;
+  const storage = document.getElementById('cu-storage').value;
+  const validade = calcularValCustom();
+  const storageMap = {refrig:'❄️ REFRIGERADO', cong:'🧊 CONGELADO', amb:'🌡️ TEMP. AMBIENTE'};
+  const hora  = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  const hoje  = new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'});
+
+  const labelHTML = `
+    <div style="width:50mm;height:80mm;padding:4mm 3mm;font-family:'Segoe UI',sans-serif;position:relative;overflow:hidden;box-sizing:border-box">
+      <div style="font-size:7pt;color:#888;text-align:center;border-bottom:1px solid #ddd;padding-bottom:2mm;margin-bottom:2mm">⭐ DUE</div>
+      <div style="font-size:15pt;font-weight:700;color:#111;line-height:1.2;margin-bottom:1mm">${prod}</div>
+      ${detalhe ? `<div style="font-size:8pt;color:#555;margin-bottom:2mm">${detalhe}</div>` : ''}
+      <div style="font-size:7pt;color:#888;margin-bottom:2mm">${[peso,chef,hoje+' '+hora].filter(Boolean).join(' · ')}</div>
+      <div style="border-top:1px solid #ccc;margin-bottom:2mm"></div>
+      <div style="font-size:9pt;font-weight:600;color:#111;margin-bottom:2mm">${storageMap[storage]||storage}</div>
+      <div style="font-size:18pt;font-weight:700;color:#111;text-align:center;border:1.5px solid #111;padding:1mm;margin-bottom:1mm">${validade}</div>
+      <div style="font-size:7pt;color:#888;text-align:center;margin-bottom:2mm">Vence em:</div>
+      ${obs ? `<div style="font-size:7pt;color:#555;border-top:1px solid #eee;padding-top:1mm">${obs}</div>` : ''}
+    </div>`;
+
+  const pw = window.open('','_blank','width=250,height=420');
+  pw.document.write(`<!DOCTYPE html><html><head><style>@page{size:50mm 80mm;margin:0}body{margin:0}</style></head><body>${labelHTML}</body></html>`);
+  pw.document.close();
+  setTimeout(()=>{ pw.print(); pw.close(); }, 300);
+
+  // log
+  state.log.push({ hora, tipo:'personalizada', produto:prod, peso:peso||'—', storage, validade, qty:1, chef });
+  renderizarLog();
+  showToast('✏️ Etiqueta personalizada impressa');
+}
+
 // ===== UTILS =====
 function formatDate(d) {
   return d.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit', year:'2-digit'});
@@ -1578,6 +1660,93 @@ atualizar();
     </div>
   </div>
   <div id="fila-lista" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:8px; max-height:300px; overflow-y:auto"></div>
+</div>
+
+<!-- ===== MODAL ETIQUETA PERSONALIZADA ===== -->
+<div id="modal-custom" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:9998; align-items:center; justify-content:center;">
+  <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:28px; width:min(560px,94vw); max-height:90vh; overflow-y:auto; display:flex; gap:24px">
+
+    <!-- formulário -->
+    <div style="flex:1; min-width:0">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px">
+        <span style="font-size:16px; font-weight:600; color:var(--text)">✏️ Etiqueta Personalizada</span>
+        <button onclick="fecharCustom()" style="background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer">✕</button>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px">
+        <div>
+          <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px">Produto / Título *</label>
+          <input id="cu-produto" type="text" placeholder="ex: Caldo de Tucupi, Gel de Maracujá…" style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:14px; font-weight:600">
+        </div>
+        <div>
+          <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px">Subtítulo / Detalhe</label>
+          <input id="cu-detalhe" type="text" placeholder="ex: com limão siciliano, sem sal…" style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px">
+        </div>
+        <div style="display:flex; gap:10px">
+          <div style="flex:1">
+            <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px">Chef</label>
+            <select id="cu-chef" style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px">
+              <option value="RAFA">RAFA</option><option value="FRAN">FRAN</option>
+              <option value="BEAT">BEAT</option><option value="MANO">MANO</option>
+              <option value="OZAN">OZAN</option><option value="CHEF">CHEF</option>
+            </select>
+          </div>
+          <div style="flex:1">
+            <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px">Armazenamento</label>
+            <select id="cu-storage" style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px">
+              <option value="refrig">❄️ Refrigerado</option>
+              <option value="cong">🧊 Congelado</option>
+              <option value="amb">🌡️ Temperatura ambiente</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px">
+          <div style="flex:1">
+            <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px">Peso / Qtd</label>
+            <input id="cu-peso" type="text" placeholder="ex: 500g, 1L, 12 und" style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px">
+          </div>
+          <div style="flex:1">
+            <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px">Validade</label>
+            <select id="cu-val-tipo" onchange="toggleValCustom()" style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px; margin-bottom:6px">
+              <option value="dias">Em X dias</option>
+              <option value="data">Data específica</option>
+              <option value="imediato">Uso imediato</option>
+            </select>
+            <div id="cu-val-dias-wrap">
+              <input id="cu-val-dias" type="number" min="1" max="365" value="3" style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px" placeholder="dias">
+            </div>
+            <div id="cu-val-data-wrap" style="display:none">
+              <input id="cu-val-data" type="date" style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px">
+            </div>
+          </div>
+        </div>
+        <div>
+          <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px">Observação</label>
+          <input id="cu-obs" type="text" placeholder="ex: não congelar, alérgenos, lote…" style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px">
+        </div>
+        <div style="display:flex; gap:8px; margin-top:4px">
+          <button onclick="atualizarPreviewCustom()" style="flex:1; padding:10px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px; cursor:pointer">👁 Preview</button>
+          <button onclick="imprimirCustom()" style="flex:2; padding:10px; background:var(--accent); border:none; border-radius:8px; color:#1a1a1a; font-size:14px; font-weight:700; cursor:pointer">🖨️ Imprimir</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- preview -->
+    <div style="width:160px; flex-shrink:0">
+      <div style="font-size:10px; color:var(--muted); margin-bottom:8px; font-weight:600">PREVIEW</div>
+      <div id="cu-preview" style="width:142px; height:227px; background:#fff; border:1px solid #ccc; border-radius:4px; padding:8px; font-family:'Segoe UI',sans-serif; position:relative; overflow:hidden; transform-origin:top left; font-size:7pt">
+        <div style="font-size:6pt;color:#888;text-align:center;border-bottom:1px solid #eee;padding-bottom:3px;margin-bottom:4px">⭐ DUE</div>
+        <div id="cu-prev-produto" style="font-size:10pt;font-weight:700;color:#111;margin-bottom:3px;line-height:1.2">Produto</div>
+        <div id="cu-prev-detalhe" style="font-size:6pt;color:#555;margin-bottom:4px"></div>
+        <div id="cu-prev-meta" style="font-size:6pt;color:#888;margin-bottom:4px"></div>
+        <div style="border-top:1px solid #ddd;margin:4px 0"></div>
+        <div id="cu-prev-storage" style="font-size:7pt;font-weight:600;color:#111;margin-bottom:3px">❄️ REFRIG</div>
+        <div id="cu-prev-validade" style="font-size:11pt;font-weight:700;color:#111;text-align:center;border:1px solid #111;padding:3px;margin-bottom:3px">—</div>
+        <div id="cu-prev-obs" style="font-size:5.5pt;color:#888;margin-top:3px"></div>
+      </div>
+      <div style="font-size:9px; color:var(--muted); margin-top:6px; text-align:center">50×80mm · escala 50%</div>
+    </div>
+  </div>
 </div>
 
 <!-- ÁREA IMPRESSÃO BATCH (oculta) -->
