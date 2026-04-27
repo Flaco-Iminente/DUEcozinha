@@ -115,7 +115,24 @@ header span{font-size:11px;color:var(--muted)}
 
 <header>
   <h1>DUE · Editor de Etiquetas</h1>
-  <span>50mm × 80mm · térmica</span>
+  <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+    <select id="size-select" class="prop-input" style="width:180px;font-size:11px;padding:5px 8px" onchange="onSizeSelect(this.value)">
+      <option value="50x80">50×80mm · padrão</option>
+      <option value="40x60">40×60mm · pequena</option>
+      <option value="57x40">57×40mm · recibo</option>
+      <option value="60x100">60×100mm · grande</option>
+      <option value="100x100">100×100mm · quadrada</option>
+      <option value="custom">✏️ Personalizado...</option>
+    </select>
+    <div id="custom-size-inputs" style="display:none;align-items:center;gap:4px">
+      <input id="custom-w" type="number" min="20" max="200" value="50" class="prop-input" style="width:52px;font-size:11px;padding:5px 6px" placeholder="L">
+      <span style="font-size:11px;color:var(--muted)">×</span>
+      <input id="custom-h" type="number" min="20" max="300" value="80" class="prop-input" style="width:52px;font-size:11px;padding:5px 6px" placeholder="A">
+      <span style="font-size:10px;color:var(--muted)">mm</span>
+      <button class="hbtn" onclick="aplicarCustom()" style="font-size:11px;padding:5px 9px">✓</button>
+    </div>
+    <span id="size-display" style="font-size:11px;color:var(--muted)">50×80mm · térmica</span>
+  </div>
   <div class="header-actions">
     <button class="hbtn" onclick="toggleGrid()" id="btn-grid">⊞ Grid</button>
     <button class="hbtn" onclick="limparCanvas()">🗑 Limpar</button>
@@ -242,7 +259,7 @@ header span{font-size:11px;color:var(--muted)}
     <div style="margin-top:auto;padding:12px 14px;border-top:1px solid var(--border)">
       <div class="prop-label">Elementos no canvas</div>
       <div id="elem-count" style="font-size:20px;font-weight:700;color:var(--accent)">0</div>
-      <div style="font-size:10px;color:var(--muted);margin-top:6px">50mm × 80mm · térmica direta</div>
+      <div id="size-info-bottom" style="font-size:10px;color:var(--muted);margin-top:6px">50mm × 80mm · térmica direta</div>
     </div>
   </div>
 </div>
@@ -534,7 +551,8 @@ function limparCanvas() {
 // ===== TEMPLATE JSON =====
 function exportarTemplate() {
   const json = JSON.stringify({
-    _meta: { versao:'1.0', criado: new Date().toISOString(), app:'DUE Label Editor' },
+    _meta: { versao:'1.0', criado: new Date().toISOString(), app:'DUE Label Editor',
+             largura_mm: labelW_mm, altura_mm: labelH_mm },
     elementos
   }, null, 2);
   const blob = new Blob([json], {type:'application/json'});
@@ -557,6 +575,9 @@ function carregarTemplate() {
         elementos = data.elementos || data;
         nextId = Math.max(...elementos.map(e => parseInt(e.id.slice(1))||0), 0) + 1;
         selId = null;
+        if (data._meta && data._meta.largura_mm) {
+          aplicarTamanho(data._meta.largura_mm, data._meta.altura_mm, true);
+        }
         renderCanvas(); selecionarElem(null); atualizarContador();
         toast('Template carregado — ' + elementos.length + ' elementos');
       } catch(err) { toast('JSON inválido'); }
@@ -594,6 +615,8 @@ function abrirPreview() {
     }
     container.appendChild(div);
   });
+  container.style.width  = Math.round(labelW_mm * 5.67) + 'px';
+  container.style.height = Math.round(labelH_mm * 5.67) + 'px';
   document.getElementById('modal-preview').classList.add('open');
 }
 
@@ -603,10 +626,10 @@ function imprimirLabel() {
   const container = document.getElementById('preview-container');
   const printWin = window.open('', '_blank', 'width=300,height=500');
   printWin.document.write(`<!DOCTYPE html><html><head><style>
-    @page{size:50mm 80mm;margin:0}
-    body{margin:0;padding:0;width:50mm;height:80mm;overflow:hidden;position:relative}
+    @page{size:${labelW_mm}mm ${labelH_mm}mm;margin:0}
+    body{margin:0;padding:0;width:${labelW_mm}mm;height:${labelH_mm}mm;overflow:hidden;position:relative}
     *{box-sizing:border-box}
-  </style></head><body>${container.outerHTML.replace(/position:absolute/g,'position:absolute')}</body></html>`);
+  </style></head><body>${container.outerHTML}</body></html>`);
   printWin.document.close();
   printWin.focus();
   setTimeout(() => { printWin.print(); printWin.close(); }, 400);
@@ -620,23 +643,74 @@ function toast(msg) {
   t._timer = setTimeout(() => t.classList.remove('show'), 2200);
 }
 
+// ===== TAMANHO DA ETIQUETA =====
+let labelW_mm = 50, labelH_mm = 80;
+
+const PRESETS = {
+  '50x80':  [50, 80],
+  '40x60':  [40, 60],
+  '57x40':  [57, 40],
+  '60x100': [60, 100],
+  '100x100':[100, 100],
+};
+
+function aplicarTamanho(w, h, silencioso) {
+  labelW_mm = w; labelH_mm = h;
+  const px_w = Math.round(w * 5.67);
+  const px_h = Math.round(h * 5.67);
+  const root = document.documentElement;
+  root.style.setProperty('--lw', px_w + 'px');
+  root.style.setProperty('--lh', px_h + 'px');
+  canvas.style.width  = px_w + 'px';
+  canvas.style.height = px_h + 'px';
+  const label = `${w}×${h}mm`;
+  document.getElementById('size-display').textContent = label + ' · térmica';
+  document.getElementById('size-info-bottom').textContent = label + ' · térmica direta';
+  if (!silencioso) toast('Tamanho: ' + label);
+}
+
+function onSizeSelect(val) {
+  const customRow = document.getElementById('custom-size-inputs');
+  if (val === 'custom') {
+    customRow.style.display = 'flex';
+    document.getElementById('custom-w').value = labelW_mm;
+    document.getElementById('custom-h').value = labelH_mm;
+  } else {
+    customRow.style.display = 'none';
+    const [w, h] = PRESETS[val] || [50, 80];
+    aplicarTamanho(w, h);
+  }
+}
+
+function aplicarCustom() {
+  const w = parseInt(document.getElementById('custom-w').value) || 50;
+  const h = parseInt(document.getElementById('custom-h').value) || 80;
+  if (w < 20 || h < 20) { toast('Mínimo: 20mm'); return; }
+  if (w > 200 || h > 300) { toast('Máximo: 200×300mm'); return; }
+  aplicarTamanho(w, h);
+  document.getElementById('custom-size-inputs').style.display = 'none';
+  // Reset select to custom option to reflect state
+  document.getElementById('size-select').value = 'custom';
+}
+
 // ===== TEMPLATE PADRÃO DUE =====
 function carregarPadraoDUE() {
+  // Template validado pela equipe DUE — 2026-04-27
   elementos = [
-    {id:'e1',tipo:'campo',fieldType:'marca',   x:11,y:8,  w:261,h:18, fontSize:10,fontWeight:'700',align:'center',color:'#111',bgColor:'transparent',content:'⭐ DUE'},
-    {id:'e2',tipo:'linha',fieldType:'',        x:11,y:30, w:261,h:4,  fontSize:1, fontWeight:'400',align:'left',  color:'#111',bgColor:'transparent',content:''},
-    {id:'e3',tipo:'campo',fieldType:'produto', x:11,y:38, w:261,h:48, fontSize:16,fontWeight:'700',align:'left',  color:'#111',bgColor:'transparent',content:'[Produto]'},
-    {id:'e4',tipo:'campo',fieldType:'tipo',    x:11,y:90, w:130,h:16, fontSize:9, fontWeight:'400',align:'left',  color:'#555',bgColor:'transparent',content:'[Tipo]'},
-    {id:'e5',tipo:'campo',fieldType:'peso',    x:141,y:90,w:131,h:16, fontSize:9, fontWeight:'400',align:'right', color:'#555',bgColor:'transparent',content:'[Peso]'},
-    {id:'e6',tipo:'linha',fieldType:'',        x:11,y:112,w:261,h:4,  fontSize:1, fontWeight:'400',align:'left',  color:'#ccc',bgColor:'transparent',content:''},
-    {id:'e7',tipo:'campo',fieldType:'storage', x:11,y:120,w:80, h:22, fontSize:11,fontWeight:'700',align:'left',  color:'#111',bgColor:'transparent',content:'[Armaz]'},
-    {id:'e8',tipo:'campo',fieldType:'validade',x:11,y:148,w:261,h:32, fontSize:22,fontWeight:'700',align:'center',color:'#111',bgColor:'transparent',content:'[Validade]'},
-    {id:'e9',tipo:'texto',fieldType:'',        x:11,y:182,w:261,h:14, fontSize:8, fontWeight:'400',align:'center',color:'#888',bgColor:'transparent',content:'Vence em:'},
-    {id:'e10',tipo:'linha',fieldType:'',       x:11,y:200,w:261,h:4,  fontSize:1, fontWeight:'400',align:'left',  color:'#ccc',bgColor:'transparent',content:''},
-    {id:'e11',tipo:'campo',fieldType:'producao',x:11,y:208,w:130,h:16,fontSize:9,fontWeight:'400',align:'left',  color:'#888',bgColor:'transparent',content:'[Produção]'},
-    {id:'e12',tipo:'campo',fieldType:'chef',   x:141,y:208,w:131,h:16,fontSize:9,fontWeight:'600',align:'right', color:'#333',bgColor:'transparent',content:'[Chef]'},
+    {id:'e2', tipo:'linha', fieldType:'',        x:10,  y:57,  w:261, h:4,  fontSize:1,  fontWeight:'400', align:'left',   color:'#111', bgColor:'transparent', content:''},
+    {id:'e3', tipo:'campo', fieldType:'produto',  x:15,  y:57,  w:261, h:48, fontSize:18, fontWeight:'700', align:'center', color:'#ffffff', bgColor:'#111111',  content:'[Produto]'},
+    {id:'e4', tipo:'campo', fieldType:'tipo',     x:30,  y:111, w:130, h:16, fontSize:9,  fontWeight:'400', align:'left',   color:'#555', bgColor:'transparent', content:'[Tipo]'},
+    {id:'e5', tipo:'campo', fieldType:'peso',     x:126, y:112, w:131, h:16, fontSize:9,  fontWeight:'400', align:'right',  color:'#555', bgColor:'transparent', content:'[Peso]'},
+    {id:'e6', tipo:'linha', fieldType:'',         x:12,  y:132, w:261, h:4,  fontSize:1,  fontWeight:'400', align:'left',   color:'#ccc', bgColor:'transparent', content:''},
+    {id:'e7', tipo:'campo', fieldType:'storage',  x:34,  y:169, w:80,  h:22, fontSize:11, fontWeight:'700', align:'left',   color:'#111', bgColor:'transparent', content:'[Armaz]'},
+    {id:'e14',tipo:'qr',    fieldType:'',         x:193, y:154, w:60,  h:60, fontSize:10, fontWeight:'400', align:'left',   color:'#111', bgColor:'transparent', content:'QR'},
+    {id:'e9', tipo:'texto', fieldType:'',         x:14,  y:238, w:261, h:14, fontSize:8,  fontWeight:'400', align:'center', color:'#888', bgColor:'transparent', content:'Vence em:'},
+    {id:'e8', tipo:'campo', fieldType:'validade', x:10,  y:276, w:261, h:32, fontSize:22, fontWeight:'700', align:'center', color:'#111', bgColor:'transparent', content:'[Validade]'},
+    {id:'e10',tipo:'linha', fieldType:'',         x:9,   y:368, w:261, h:4,  fontSize:1,  fontWeight:'400', align:'left',   color:'#ccc', bgColor:'transparent', content:''},
+    {id:'e11',tipo:'campo', fieldType:'producao', x:21,  y:385, w:130, h:16, fontSize:9,  fontWeight:'400', align:'left',   color:'#888', bgColor:'transparent', content:'[Produção]'},
+    {id:'e12',tipo:'campo', fieldType:'chef',     x:125, y:387, w:131, h:16, fontSize:9,  fontWeight:'600', align:'right',  color:'#333', bgColor:'transparent', content:'[Chef]'},
   ];
-  nextId = 13;
+  nextId = 15;
   selId = null;
   renderCanvas(); selecionarElem(null); atualizarContador();
   toast('Template padrão DUE carregado!');
