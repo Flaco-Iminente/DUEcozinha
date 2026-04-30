@@ -648,6 +648,16 @@ main {
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
+<!-- BLOQUEIO DESKTOP -->
+<div id="desktop-block" style="display:none;position:fixed;inset:0;background:#0f0f0f;z-index:9999;flex-direction:column;align-items:center;justify-content:center;padding:40px;text-align:center;gap:24px">
+  <div style="font-size:56px;margin-bottom:8px">📱</div>
+  <div style="font-size:30px;font-weight:900;letter-spacing:5px;color:#c8a96e">DUE</div>
+  <div style="font-size:13px;color:#777;letter-spacing:2px;text-transform:uppercase;margin-top:-16px">Etiquetas</div>
+  <div style="font-size:15px;font-weight:700;color:#f0ece4;max-width:280px;line-height:1.7;margin-top:8px">Este app funciona exclusivamente no<br><span style="color:#c8a96e">Chrome Android</span></div>
+  <div style="font-size:12px;color:#555;max-width:260px;line-height:1.8;border:1px solid #2e2e2e;border-radius:12px;padding:14px;background:#1a1a1a">A impressão Bluetooth (Web BLE) só é suportada no Chrome para Android. Acesse este link no <strong style="color:#777">tablet da cozinha</strong>.</div>
+  <div style="font-size:10px;color:#333;font-family:monospace;margin-top:8px;letter-spacing:0.5px">ozannese.github.io/DUEcozinha/<br>DUE_Label_App.html</div>
+</div>
+
 <script>
 // ===== CONFIG =====
 const CONFIG = {
@@ -1473,6 +1483,19 @@ function showToast(msg, tipo) {
   clearTimeout(_toastTimer);
   _toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
 }
+
+// ===== ANDROID GUARD =====
+(function() {
+  var ua = navigator.userAgent;
+  var isAndroid = /Android/i.test(ua);
+  if (!isAndroid) {
+    var block = document.getElementById('desktop-block');
+    block.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    document.body.style.pointerEvents = 'none';
+    block.style.pointerEvents = 'auto';
+  }
+})();
 
 initChefBar();
 initProdutoSelect();
