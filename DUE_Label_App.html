@@ -2,1800 +2,1360 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#1a1a1a">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0f0f0f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DUE Etiquetas">
 <title>DUE · Etiquetas</title>
 <style>
-  /* ===== RESET & BASE ===== */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg: #0f0f0f;
-    --surface: #1a1a1a;
-    --surface2: #242424;
-    --border: #2e2e2e;
-    --text: #f0ece4;
-    --muted: #888;
-    --accent: #c8a96e;       /* dourado-areia — paleta DUE */
-    --accent2: #6b9e7a;      /* verde mangaba */
-    --danger: #c0392b;
-    --warn: #e67e22;
-    --ok: #27ae60;
-    --radius: 12px;
-    --font: 'Segoe UI', system-ui, sans-serif;
-  }
-
-  body {
-    font-family: var(--font);
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* ===== HEADER ===== */
-  header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .logo {
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: 4px;
-    color: var(--accent);
-  }
-
-  .logo-sub {
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-top: 2px;
-  }
-
-  /* ===== CHEF SELECTOR ===== */
-  .chef-bar {
-    background: var(--surface2);
-    border-bottom: 1px solid var(--border);
-    padding: 10px 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .chef-bar label {
-    font-size: 11px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    white-space: nowrap;
-  }
-
-  .chef-btn {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    padding: 6px 14px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    transition: all 0.15s;
-  }
-
-  .chef-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .chef-btn.active {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #1a1a1a;
-  }
-
-  /* ===== MAIN LAYOUT ===== */
-  main {
-    flex: 1;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    max-width: 1200px;
-    margin: 0 auto;
-    width: 100%;
-    padding: 24px 20px;
-    gap: 24px;
-  }
-
-  @media (max-width: 800px) {
-    main { grid-template-columns: 1fr; }
-  }
-
-  /* ===== SECTIONS ===== */
-  .section-title {
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 12px;
-  }
-
-  /* ===== TYPE SELECTOR ===== */
-  .type-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 20px;
-  }
-
-  .type-card {
-    background: var(--surface);
-    border: 2px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px 10px;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.15s;
-  }
-
-  .type-card:hover { border-color: var(--accent); }
-  .type-card.active { border-color: var(--accent); background: #2a2418; }
-
-  .type-card .type-icon { font-size: 22px; margin-bottom: 6px; }
-  .type-card .type-name { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
-  .type-card .type-desc { font-size: 10px; color: var(--muted); margin-top: 3px; }
-
-  /* ===== FORM ===== */
-  .form-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
-
-  .form-group {
-    margin-bottom: 14px;
-  }
-
-  .form-group label {
-    display: block;
-    font-size: 11px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 6px;
-  }
-
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    color: var(--text);
-    font-size: 15px;
-    font-family: var(--font);
-    transition: border-color 0.15s;
-    -webkit-appearance: none;
-  }
-
-  .form-group input:focus,
-  .form-group select:focus {
-    outline: none;
-    border-color: var(--accent);
-  }
-
-  .form-group select option { background: #1a1a1a; }
-
-  .form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  /* Qty counter */
-  .qty-control {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .qty-btn {
-    background: transparent;
-    border: none;
-    color: var(--accent);
-    font-size: 22px;
-    width: 44px;
-    height: 44px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.1s;
-    flex-shrink: 0;
-  }
-
-  .qty-btn:hover { background: #2a2418; }
-
-  .qty-display {
-    flex: 1;
-    text-align: center;
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text);
-    line-height: 44px;
-  }
-
-  /* Validade automática */
-  .val-chip {
-    display: inline-block;
-    background: #1a2a1e;
-    border: 1px solid var(--ok);
-    color: var(--ok);
-    border-radius: 6px;
-    padding: 3px 10px;
-    font-size: 12px;
-    font-weight: 600;
-    margin-top: 6px;
-  }
-
-  .val-chip.warn { background: #2a1f0e; border-color: var(--warn); color: var(--warn); }
-  .val-chip.danger { background: #2a0e0e; border-color: var(--danger); color: var(--danger); }
-
-  /* ===== STORAGE CHIPS ===== */
-  .storage-chips {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 14px;
-  }
-
-  .storage-chip {
-    flex: 1;
-    background: var(--surface);
-    border: 2px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 12px;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.15s;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--muted);
-  }
-
-  .storage-chip:hover { border-color: var(--accent); color: var(--text); }
-
-  .storage-chip.active {
-    border-color: var(--accent);
-    background: #2a2418;
-    color: var(--text);
-  }
-
-  .storage-chip.disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-    pointer-events: none;
-  }
-
-  .storage-chip .storage-days {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-
-  .storage-chip.active .storage-days {
-    color: var(--accent);
-  }
-
-  /* ===== PRINT BUTTON ===== */
-  .btn-print {
-    background: var(--accent);
-    color: #1a1a1a;
-    border: none;
-    border-radius: var(--radius);
-    padding: 16px;
-    font-size: 15px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 8px;
-    transition: all 0.15s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-  }
-
-  .btn-print:hover { background: #d4b87a; transform: translateY(-1px); }
-  .btn-print:active { transform: translateY(0); }
-  .btn-print:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-
-  .btn-secondary {
-    background: transparent;
-    color: var(--muted);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 12px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 8px;
-    transition: all 0.15s;
-  }
-
-  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
-
-  /* ===== PREVIEW PANEL ===== */
-  .preview-panel {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .preview-wrap {
-    background: #f5f5f5;
-    border-radius: 8px;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    min-height: 300px;
-  }
-
-  /* ===== ETIQUETA VISUAL ===== */
-  /* 50mm x 80mm @ 96dpi ≈ 189px x 302px */
-  .label {
-    width: 189px;
-    height: 302px;
-    background: white;
-    color: #111;
-    font-family: 'Arial Narrow', Arial, sans-serif;
-    position: relative;
-    overflow: hidden;
-    border: 1px solid #ccc;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .label-stripe {
-    height: 6px;
-    width: 100%;
-    flex-shrink: 0;
-  }
-
-  .label-stripe.porcao   { background: #111; }
-  .label-stripe.producao { background: #444; }
-  .label-stripe.entrada  { background: #777; }
-
-  .label-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 5px 7px 3px;
-    border-bottom: 1px solid #ddd;
-  }
-
-  .label-brand {
-    font-size: 13px;
-    font-weight: 900;
-    letter-spacing: 3px;
-    color: #111;
-  }
-
-  .label-type-tag {
-    font-size: 7px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    padding: 2px 5px;
-    border: 1px solid #111;
-    color: #111;
-    text-transform: uppercase;
-  }
-
-  .label-produto {
-    padding: 6px 7px 4px;
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 1.2;
-    color: #000;
-    border-bottom: 1px solid #eee;
-  }
-
-  .label-body {
-    flex: 1;
-    padding: 5px 7px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .label-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-  }
-
-  .label-key {
-    font-size: 7px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #888;
-  }
-
-  .label-val {
-    font-size: 10px;
-    font-weight: 700;
-    color: #111;
-    text-align: right;
-  }
-
-  .label-val.big {
-    font-size: 13px;
-    font-weight: 900;
-  }
-
-  .label-divider {
-    border: none;
-    border-top: 1px dashed #ddd;
-    margin: 2px 0;
-  }
-
-  .label-validade-block {
-    background: #111;
-    color: white;
-    padding: 5px 7px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-shrink: 0;
-  }
-
-  .label-val-label {
-    font-size: 7px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: #aaa;
-  }
-
-  .label-val-date {
-    font-size: 13px;
-    font-weight: 900;
-    letter-spacing: 1px;
-    color: white;
-  }
-
-  .label-storage-tag {
-    font-size: 7px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    color: #aaa;
-    margin-left: 4px;
-  }
-
-  .label-footer {
-    display: flex;
-    justify-content: space-between;
-    padding: 3px 7px;
-    border-top: 1px solid #eee;
-    background: #fafafa;
-  }
-
-  .label-footer-item {
-    font-size: 7px;
-    color: #999;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-  }
-
-  /* Rendimento bar */
-  .rendimento-bar-wrap {
-    margin-top: 2px;
-  }
-
-  .rendimento-bar-bg {
-    background: #eee;
-    border-radius: 3px;
-    height: 5px;
-    overflow: hidden;
-  }
-
-  .rendimento-bar-fill {
-    background: #111;
-    height: 100%;
-    border-radius: 3px;
-    transition: width 0.3s;
-  }
-
-  .rendimento-pct {
-    font-size: 9px;
-    font-weight: 800;
-    color: #111;
-    text-align: right;
-    margin-top: 1px;
-  }
-
-  /* ===== QTY BADGE ===== */
-  .qty-badge {
-    background: #f5f5f5;
-    border: 2px solid #111;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: 900;
-    color: #111;
-    position: absolute;
-    top: 8px;
-    right: -46px;
-  }
-
-  .preview-info {
-    margin-top: 14px;
-    font-size: 12px;
-    color: var(--muted);
-    text-align: center;
-  }
-
-  /* ===== LOG TABLE ===== */
-  .log-section {
-    grid-column: 1 / -1;
-    margin-top: 8px;
-  }
-
-  .log-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-  }
-
-  .log-count {
-    background: var(--accent);
-    color: #1a1a1a;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 20px;
-  }
-
-  .log-table-wrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-  }
-
-  .log-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12px;
-  }
-
-  .log-table th {
-    background: var(--surface2);
-    padding: 10px 12px;
-    text-align: left;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--muted);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .log-table td {
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--border);
-    color: var(--text);
-    vertical-align: middle;
-  }
-
-  .log-table tr:last-child td { border-bottom: none; }
-  .log-table tr:hover td { background: var(--surface2); }
-
-  .log-empty {
-    text-align: center;
-    color: var(--muted);
-    padding: 30px;
-    font-size: 13px;
-  }
-
-  .tag-tipo {
-    display: inline-block;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    padding: 2px 7px;
-    border-radius: 4px;
-    text-transform: uppercase;
-  }
-
-  .tag-tipo.porcao   { background: #2a2418; color: var(--accent); border: 1px solid var(--accent); }
-  .tag-tipo.producao { background: #1a2a20; color: var(--accent2); border: 1px solid var(--accent2); }
-  .tag-tipo.entrada  { background: #1a1f2a; color: #7aacce; border: 1px solid #7aacce; }
-
-  /* ===== TOAST ===== */
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%) translateY(80px);
-    background: var(--ok);
-    color: white;
-    padding: 12px 24px;
-    border-radius: 30px;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    transition: transform 0.3s ease;
-    z-index: 999;
-    white-space: nowrap;
-  }
-
-  .toast.show { transform: translateX(-50%) translateY(0); }
-
-  /* ===== PRINT STYLES ===== */
-  @media print {
-    body * { visibility: hidden !important; }
-    #print-area, #print-area * { visibility: visible !important; }
-    #print-area {
-      position: fixed;
-      top: 0; left: 0;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 2mm;
-      padding: 0;
-    }
-
-    .label {
-      width: 50mm;
-      height: 80mm;
-      border: none;
-      page-break-inside: avoid;
-    }
-
-    .label-brand { font-size: 10pt; }
-    .label-produto { font-size: 11pt; }
-    .label-type-tag { font-size: 6pt; }
-    .label-val.big { font-size: 10pt; }
-    .label-val-date { font-size: 10pt; }
-    .label-key { font-size: 6pt; }
-    .label-val { font-size: 8pt; }
-    .label-footer-item { font-size: 6pt; }
-  }
+:root {
+  --bg: #0f0f0f;
+  --surface: #1a1a1a;
+  --surface2: #242424;
+  --border: #2e2e2e;
+  --text: #f0ece4;
+  --muted: #777;
+  --accent: #c8a96e;
+  --ok: #4caf7d;
+  --warn: #e67e22;
+  --danger: #e05252;
+  --radius: 14px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  padding-left: max(0px, env(safe-area-inset-left));
+  padding-right: max(0px, env(safe-area-inset-right));
+}
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.header-left { display: flex; flex-direction: column; }
+.logo { font-size: 20px; font-weight: 900; letter-spacing: 4px; color: var(--accent); }
+.logo-sub { font-size: 9px; color: var(--muted); letter-spacing: 2px; }
+.header-right { display: flex; align-items: center; gap: 8px; }
+.size-toggle {
+  display: flex;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px;
+  gap: 2px;
+}
+.size-btn {
+  background: transparent;
+  border: none;
+  border-radius: 16px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.size-btn.active { background: var(--accent); color: #1a1a1a; }
+.bt-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 7px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  font-family: inherit;
+  min-height: 38px;
+}
+.bt-pill.connected { border-color: var(--ok); color: var(--ok); background: #0d2218; }
+.bt-pill.connecting { border-color: var(--warn); color: var(--warn); }
+.bt-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.bt-dot.pulse { animation: pulse 1.2s infinite; }
+.chef-bar {
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.chef-bar::-webkit-scrollbar { display: none; }
+.chef-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; flex-shrink: 0; }
+.chef-btn {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  color: var(--muted);
+  padding: 0 14px;
+  height: 34px;
+  border-radius: 17px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.chef-btn.active { background: var(--accent); border-color: var(--accent); color: #1a1a1a; }
+main {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: max(120px, calc(16px + env(safe-area-inset-bottom)));
+}
+.section-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.tipo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.tipo-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 8px;
+  text-align: center;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+  width: 100%;
+  transition: border-color 0.15s, background 0.15s;
+}
+.tipo-card.active { border-color: var(--accent); background: #1f1a10; }
+.tipo-icon { font-size: 20px; margin-bottom: 3px; }
+.tipo-name { font-size: 11px; font-weight: 700; color: var(--text); }
+.tipo-desc { font-size: 9px; color: var(--muted); margin-top: 1px; }
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+.field input, .field select, .field textarea {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 15px;
+  padding: 12px 14px;
+  width: 100%;
+  font-family: inherit;
+  -webkit-appearance: none;
+  min-height: 48px;
+  transition: border-color 0.2s;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+.field input::placeholder { color: var(--muted); opacity: 0.8; }
+.field input[type="number"] { -moz-appearance: textfield; }
+.field input[type="number"]::-webkit-outer-spin-button,
+.field input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+.qty-wrap { display: flex; align-items: center; gap: 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.qty-btn {
+  background: var(--surface2);
+  border: none;
+  color: var(--text);
+  font-size: 22px;
+  width: 52px;
+  height: 48px;
+  cursor: pointer;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+.qty-num { flex: 1; text-align: center; font-size: 20px; font-weight: 900; }
+.val-chip {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ok);
+}
+.storage-chips { display: flex; gap: 8px; }
+.storage-chip {
+  flex: 1;
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 8px;
+  text-align: center;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  transition: all 0.15s;
+}
+.storage-chip.active { border-color: var(--ok); color: var(--ok); background: #0d2218; }
+.storage-chip.active.cong { border-color: #5ba8d9; color: #5ba8d9; background: #0d1e2e; }
+.storage-chip.disabled { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
+.storage-chip-icon { font-size: 18px; display: block; margin-bottom: 2px; }
+.storage-chip-label { font-size: 11px; display: block; }
+.tabs {
+  display: flex;
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+}
+.tab {
+  flex: 1;
+  padding: 10px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  font-family: inherit;
+}
+.tab.active { background: var(--surface); color: var(--text); }
+.tab-content { display: none; }
+.tab-content.active { display: flex; flex-direction: column; gap: 12px; }
+/* ========== PREVIEW LABEL 80mm ========== */
+.preview-wrap { display: flex; justify-content: center; }
+.label {
+  width: 189px;
+  height: 302px;
+  background: white;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  color: #111;
+  transition: height 0.3s;
+}
+.label.size-30 { height: 113px; }
+.label-stripe { height: 7px; flex-shrink: 0; }
+.label-stripe.porcao      { background: #1a1a2e; }
+.label-stripe.producao    { background: #1a2e1a; }
+.label-stripe.entrada     { background: #2e1a1a; }
+.label-stripe.personalizada { background: #2e1a2e; }
+.label-header { display: flex; justify-content: space-between; align-items: center; padding: 3px 6px 2px; border-bottom: 1px solid #eee; flex-shrink: 0; }
+.label-brand { font-size: 11px; font-weight: 900; letter-spacing: 3px; }
+.label-type-tag { font-size: 6px; font-weight: 700; padding: 2px 4px; border: 1px solid #111; letter-spacing: 1px; text-transform: uppercase; }
+.label-produto { padding: 5px 6px 3px; font-size: 12px; font-weight: 700; line-height: 1.2; border-bottom: 1px solid #eee; flex-shrink: 0; }
+.label-body { flex: 1; padding: 4px 6px; display: flex; flex-direction: column; gap: 3px; }
+.label-row { display: flex; justify-content: space-between; align-items: baseline; }
+.label-key { font-size: 6px; font-weight: 600; text-transform: uppercase; color: #999; }
+.label-val { font-size: 9px; font-weight: 700; }
+.label-val.big { font-size: 12px; font-weight: 900; }
+.label-validade { background: #111; color: white; padding: 5px 6px 3px; flex-shrink: 0; }
+.label-val-label { font-size: 6px; font-weight: 700; letter-spacing: 2px; display: block; opacity: 0.7; }
+.label-val-date { font-size: 13px; font-weight: 900; letter-spacing: 1px; }
+.label-footer { display: flex; justify-content: space-between; padding: 2px 6px; background: #f7f7f7; border-top: 1px solid #eee; flex-shrink: 0; }
+.label-footer-item { font-size: 6px; color: #aaa; font-weight: 600; }
+/* ========== PREVIEW LABEL 30mm ========== */
+.label30 {
+  width: 189px;
+  background: white;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  color: #111;
+}
+.label30-stripe { height: 5px; flex-shrink: 0; }
+.label30-stripe.porcao      { background: #1a1a2e; }
+.label30-stripe.producao    { background: #1a2e1a; }
+.label30-stripe.entrada     { background: #2e1a1a; }
+.label30-stripe.personalizada { background: #2e1a2e; }
+.label30-header { display: flex; justify-content: space-between; align-items: center; padding: 2px 5px; border-bottom: 1px solid #eee; flex-shrink: 0; }
+.label30-brand { font-size: 9px; font-weight: 900; letter-spacing: 2px; }
+.label30-tipo  { font-size: 6px; font-weight: 700; padding: 1px 3px; border: 1px solid #111; letter-spacing: 1px; text-transform: uppercase; }
+.label30-produto { padding: 4px 6px; font-size: 10px; font-weight: 700; line-height: 1.2; border-bottom: 1px solid #eee; flex-shrink: 0; }
+.label30-val-wrap { background: #111; color: white; padding: 3px 6px; flex-shrink: 0; }
+.label30-val-label { font-size: 6px; font-weight: 700; letter-spacing: 1px; display: block; opacity: 0.7; }
+.label30-val-date  { font-size: 11px; font-weight: 900; }
+.label30-footer { display: flex; justify-content: space-between; padding: 2px 6px; background: #f7f7f7; border-top: 1px solid #eee; flex-shrink: 0; }
+.label30-footer-item { font-size: 6px; color: #aaa; font-weight: 600; }
+.log-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
+.log-item-nome { font-size: 13px; font-weight: 700; }
+.log-item-meta { font-size: 11px; color: var(--muted); }
+.fab-area {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  padding: 10px 16px;
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+  background: linear-gradient(transparent, var(--bg) 35%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+}
+.fab-area > * { pointer-events: auto; }
+.btn-print {
+  background: var(--accent);
+  color: #1a1a1a;
+  border: none;
+  border-radius: var(--radius);
+  height: 56px;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+.btn-print:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn-print.sending  { background: var(--warn); }
+.btn-print.success  { background: var(--ok); }
+.btn-secundario {
+  background: var(--surface2);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  height: 34px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  font-family: inherit;
+  display: none;
+}
+.editor-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  text-decoration: none;
+  text-align: center;
+}
+.editor-link:active { background: var(--surface); }
+.modal-bg {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 500;
+  align-items: flex-end;
+}
+.modal-bg.show { display: flex; }
+.modal {
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  padding: 24px 20px 36px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.modal-title { font-size: 16px; font-weight: 800; letter-spacing: 1px; }
+.modal-sub { font-size: 13px; color: var(--muted); line-height: 1.5; }
+.modal-btn {
+  background: var(--accent);
+  color: #1a1a1a;
+  border: none;
+  border-radius: var(--radius);
+  height: 52px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+  width: 100%;
+}
+.modal-btn-sec {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  height: 44px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  width: 100%;
+}
+.toast {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: var(--ok);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0;
+  transition: all 0.3s;
+  z-index: 999;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.error { background: var(--danger); }
+.toast.warn  { background: var(--warn); }
 </style>
 </head>
 <body>
 
-<header>
-  <div>
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
     <div class="logo">DUE</div>
-    <div class="logo-sub">Sistema de Etiquetas</div>
+    <div class="logo-sub">Etiquetas</div>
   </div>
-</header>
-
-<!-- CHEF SELECTOR -->
-<div class="chef-bar" id="chef-bar">
-  <label>Chef ativo:</label>
+  <div class="header-right">
+    <div class="size-toggle">
+      <button type="button" class="size-btn active" id="sz-80" onclick="setLabelSize('80')">80mm</button>
+      <button type="button" class="size-btn" id="sz-30" onclick="setLabelSize('30')">30mm</button>
+    </div>
+    <button type="button" class="bt-pill" id="bt-pill" onclick="toggleBluetooth()">
+      <div class="bt-dot" id="bt-dot"></div>
+      <span id="bt-label">BT</span>
+    </button>
+  </div>
 </div>
 
+<!-- CHEF BAR -->
+<div class="chef-bar" id="chef-bar">
+  <span class="chef-label">Chef:</span>
+</div>
+
+<!-- MAIN -->
 <main>
 
-  <!-- LEFT: FORM -->
-  <div class="form-panel">
+  <!-- TABS -->
+  <div class="tabs">
+    <button type="button" class="tab active" onclick="setTab('imprimir',this)">🖨 Imprimir</button>
+    <button type="button" class="tab" onclick="setTab('lote',this)">📦 Lote</button>
+    <button type="button" class="tab" onclick="setTab('log',this)">📋 Log</button>
+  </div>
 
-    <!-- TYPE SELECTOR -->
-    <div class="section-title">Tipo de etiqueta</div>
-    <div class="type-grid">
-      <div class="type-card active" onclick="setTipo('porcao', this)">
-        <div class="type-icon">🔪</div>
-        <div class="type-name">Porção</div>
-        <div class="type-desc">Mise en place</div>
-      </div>
-      <div class="type-card" onclick="setTipo('producao', this)">
-        <div class="type-icon">🫙</div>
-        <div class="type-name">Produção</div>
-        <div class="type-desc">Potes / Vácuo</div>
-      </div>
-      <div class="type-card" onclick="setTipo('entrada', this)">
-        <div class="type-icon">📦</div>
-        <div class="type-name">Entrada</div>
-        <div class="type-desc">Recebimento</div>
+  <!-- TAB IMPRIMIR -->
+  <div class="tab-content active" id="tab-imprimir">
+
+    <!-- TIPO -->
+    <div>
+      <div class="section-label">Tipo de etiqueta</div>
+      <div class="tipo-grid">
+        <button type="button" class="tipo-card active" onclick="setTipo('porcao',this)">
+          <div class="tipo-icon">🔪</div>
+          <div class="tipo-name">Porção</div>
+          <div class="tipo-desc">Mise en place</div>
+        </button>
+        <button type="button" class="tipo-card" onclick="setTipo('producao',this)">
+          <div class="tipo-icon">🫙</div>
+          <div class="tipo-name">Produção</div>
+          <div class="tipo-desc">Potes / Vácuo</div>
+        </button>
+        <button type="button" class="tipo-card" onclick="setTipo('entrada',this)">
+          <div class="tipo-icon">📦</div>
+          <div class="tipo-name">Entrada</div>
+          <div class="tipo-desc">Recebimento</div>
+        </button>
+        <button type="button" class="tipo-card" onclick="setTipo('personalizada',this)">
+          <div class="tipo-icon">✏️</div>
+          <div class="tipo-name">Personalizada</div>
+          <div class="tipo-desc">Nome livre</div>
+        </button>
       </div>
     </div>
 
     <!-- PRODUTO -->
-    <div class="form-group">
-      <label>Produto</label>
-      <select id="select-produto" onchange="onProdutoChange()">
-        <option value="">— selecione —</option>
-      </select>
+    <div class="card">
+      <div id="sel-wrap" class="field">
+        <label>Produto</label>
+        <select id="sel-produto" onchange="onProduto()">
+          <option value="">— selecione —</option>
+        </select>
+      </div>
+      <div id="nome-livre-wrap" class="field" style="display:none">
+        <label>Nome do produto</label>
+        <input type="text" id="campo-nomeLivre" placeholder="Ex: Especial da casa, Stock de frango…" autocomplete="off" autocorrect="off" spellcheck="false" oninput="atualizar()">
+      </div>
+      <div id="storage-wrap" style="display:none">
+        <div class="section-label" style="margin-bottom:6px">Armazenamento</div>
+        <div class="storage-chips" id="storage-chips"></div>
+      </div>
+      <div id="campos"></div>
+      <div id="val-wrap" style="display:none">
+        <div class="val-chip" id="val-chip">—</div>
+      </div>
+      <div id="val-manual-wrap" style="display:none" class="field">
+        <label>Validade (dias)</label>
+        <input type="number" id="campo-validadeManual" min="0" max="365" placeholder="Ex: 3" style="font-size:22px;font-weight:900;text-align:center" oninput="onValidadeManual()">
+      </div>
+      <div id="val-manual-chip" style="display:none">
+        <div class="val-chip" id="val-manual-chip-text">—</div>
+      </div>
     </div>
-
-    <!-- STORAGE CHIPS -->
-    <div id="storage-area" style="display:none">
-      <div class="section-title">Armazenamento</div>
-      <div class="storage-chips" id="storage-chips"></div>
-    </div>
-
-    <!-- CAMPOS DINÂMICOS -->
-    <div id="campos-dinamicos"></div>
 
     <!-- QUANTIDADE -->
-    <div class="form-group">
-      <label>Quantidade de etiquetas</label>
-      <div class="qty-control">
-        <button class="qty-btn" onclick="changeQty(-1)">−</button>
-        <div class="qty-display" id="qty-display">1</div>
-        <button class="qty-btn" onclick="changeQty(1)">+</button>
-      </div>
-    </div>
-
-    <!-- VALIDADE CALCULADA -->
-    <div id="validade-info" style="margin-bottom:14px; display:none;">
-      <div class="section-title">Validade calculada</div>
-      <span class="val-chip" id="validade-chip">—</span>
-    </div>
-
-    <!-- BOTÕES -->
-    <button class="btn-print" onclick="imprimir()" id="btn-imprimir" disabled>
-      🖨️ IMPRIMIR <span id="btn-qty-label">1 ETIQUETA</span>
-    </button>
-    <button class="btn-secondary" onclick="previewOnly()">👁️ Visualizar antes de imprimir</button>
-
-  </div>
-
-  <!-- RIGHT: PREVIEW -->
-  <div class="preview-panel">
-    <div class="section-title" style="width:100%">Preview da etiqueta</div>
-    <div class="preview-wrap">
-      <div style="position:relative">
-        <div id="preview-label" class="label">
-          <div class="label-stripe porcao"></div>
-          <div class="label-header">
-            <span class="label-brand">DUE</span>
-            <span class="label-type-tag">Porção</span>
-          </div>
-          <div class="label-produto" id="prev-produto" style="color:#bbb; font-style:italic; font-size:12px">
-            Selecione um produto
-          </div>
-          <div class="label-body">
-            <div class="label-row">
-              <span class="label-key">Peso</span>
-              <span class="label-val big" id="prev-peso">—</span>
-            </div>
-            <div class="label-row">
-              <span class="label-key">Prep</span>
-              <span class="label-val" id="prev-prep">—</span>
-            </div>
-          </div>
-          <div class="label-validade-block">
-            <span class="label-val-label">Validade</span>
-            <span class="label-val-date" id="prev-validade">—</span>
-          </div>
-          <div class="label-footer">
-            <span class="label-footer-item" id="prev-chef">CHEF —</span>
-            <span class="label-footer-item" id="prev-turno">TURNO —</span>
-            <span class="label-footer-item" id="prev-hora">—</span>
-          </div>
+    <div class="card">
+      <div class="field">
+        <label>Quantidade de etiquetas</label>
+        <div class="qty-wrap">
+          <button type="button" class="qty-btn" onclick="changeQty(-1)">−</button>
+          <div class="qty-num" id="qty-num">1</div>
+          <button type="button" class="qty-btn" onclick="changeQty(+1)">+</button>
         </div>
-        <div class="qty-badge" id="qty-badge" style="display:none">1</div>
       </div>
     </div>
-    <div class="preview-info" id="preview-info">Configure os campos ao lado para visualizar a etiqueta</div>
-  </div>
 
-  <!-- LOG -->
-  <div class="log-section">
-    <div class="log-header">
-      <div class="section-title" style="margin-bottom:0">Registro desta sessão</div>
-      <div>
-        <span class="log-count" id="log-count">0 impressões</span>
-        <button class="btn-secondary" style="width:auto; display:inline-block; padding:6px 14px; margin:0 0 0 8px; font-size:11px" onclick="exportarCSV()">⬇ Exportar CSV</button>
-        <button class="btn-secondary" style="width:auto; display:inline-block; padding:6px 14px; margin:0 0 0 8px; font-size:11px; background:var(--accent2); color:#fff; border-color:var(--accent2)" onclick="abrirModalBatch()">📥 Importar Batch</button>
-        <button class="btn-secondary" style="width:auto; display:inline-block; padding:6px 14px; margin:0 0 0 8px; font-size:11px; background:#7b5ea7; color:#fff; border-color:#7b5ea7" onclick="abrirCustom()">✏️ Etiqueta Livre</button>
+    <!-- PREVIEW -->
+    <div>
+      <div class="section-label">Preview — <span id="preview-size-label">50×80mm</span></div>
+      <div class="preview-wrap" id="preview-wrap"></div>
+    </div>
+
+    <!-- LINK EDITOR -->
+    <a class="editor-link" href="DUE_Label_Editor.html">
+      🎨 Editor de Layout
+    </a>
+
+  </div><!-- /tab-imprimir -->
+
+  <!-- TAB LOTE -->
+  <div class="tab-content" id="tab-lote">
+    <div>
+      <div class="section-label">Impressão em Lote</div>
+      <div style="display:flex;gap:6px;margin-bottom:12px">
+        <button id="lote-tab-json" type="button" onclick="switchLoteTab('json')" style="flex:1;padding:10px 6px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:#1a1a1a;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📋 JSON</button>
+        <button id="lote-tab-csv"  type="button" onclick="switchLoteTab('csv')"  style="flex:1;padding:10px 6px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">🔗 CSV / Sheets</button>
+      </div>
+      <div id="lote-painel-json" class="card">
+        <div class="field">
+          <label>Cole o JSON com a lista</label>
+          <textarea id="lote-json" placeholder='[{"produto":"Polvo Cozido","chef":"RAFA","tipo":"porcao","peso":"150g","qty":1},...]' style="min-height:120px;font-family:monospace;font-size:12px;resize:vertical;line-height:1.5;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);width:100%;box-sizing:border-box;-webkit-appearance:none"></textarea>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button type="button" onclick="validarLote()" style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:12px 10px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;min-height:48px">✓ Validar</button>
+          <button type="button" onclick="importarJSON()" style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:12px 10px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;min-height:48px">📥 Arquivo</button>
+        </div>
+      </div>
+      <div id="lote-painel-csv" class="card" style="display:none">
+        <div class="field">
+          <label style="font-size:11px;color:var(--muted);margin-bottom:8px;display:block">URL do Google Sheets (Publicar na web → CSV)</label>
+          <input id="lote-csv-url" type="url" placeholder="https://docs.google.com/spreadsheets/d/.../pub?...output=csv" style="width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;box-sizing:border-box;-webkit-appearance:none;font-family:inherit">
+        </div>
+        <button type="button" onclick="carregarCSVURL()" style="width:100%;background:#6b9e7a;border:none;color:#fff;padding:12px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;min-height:48px;margin-bottom:10px">🔗 Carregar da URL</button>
+        <div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:10px">— ou —</div>
+        <input id="lote-csv-file" type="file" accept=".csv" onchange="carregarCSVArquivo(this)" style="width:100%;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;box-sizing:border-box;font-family:inherit">
       </div>
     </div>
-    <div class="log-table-wrap">
-      <table class="log-table">
-        <thead>
-          <tr>
-            <th>Hora</th>
-            <th>Tipo</th>
-            <th>Produto</th>
-            <th>Peso/Qtd</th>
-            <th>Armaz.</th>
-            <th>Validade</th>
-            <th>Qt etiquetas</th>
-            <th>Chef</th>
-          </tr>
-        </thead>
-        <tbody id="log-tbody">
-          <tr><td colspan="8" class="log-empty">Nenhuma impressão registrada ainda</td></tr>
-        </tbody>
-      </table>
+    <div id="lote-preview" style="display:none">
+      <div class="section-label">Preview — <span id="lote-count">0</span> etiquetas</div>
+      <div id="lote-items" style="display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto;padding:4px;margin:-4px"></div>
+    </div>
+    <div id="lote-btn-area" style="display:none;margin-top:4px">
+      <button type="button" id="btn-lote-imprimir" onclick="imprimirLote()" style="width:100%;background:var(--ok);border:none;color:white;padding:14px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:700;min-height:56px;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px">🖨 Imprimir Lote (0)</button>
+    </div>
+    <div id="lote-progress" style="display:none;margin-top:4px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:11px;color:var(--muted);font-weight:600">Progresso:</span>
+        <span id="lote-progress-text" style="font-size:13px;font-weight:700;color:var(--ok)">0 / 0</span>
+      </div>
+      <div style="width:100%;height:8px;background:var(--border);border-radius:4px;overflow:hidden">
+        <div id="lote-progress-bar" style="height:100%;background:var(--ok);width:0%;transition:width 0.3s"></div>
+      </div>
+    </div>
+  </div><!-- /tab-lote -->
+
+  <!-- TAB LOG -->
+  <div class="tab-content" id="tab-log">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="section-label" style="margin:0">Histórico da sessão</div>
+      <button type="button" onclick="exportCSV()" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">⬇ CSV</button>
+    </div>
+    <div id="log-lista">
+      <div style="text-align:center;color:var(--muted);padding:40px;font-size:13px">Nenhuma impressão ainda</div>
     </div>
   </div>
 
 </main>
 
-<!-- ÁREA DE IMPRESSÃO OCULTA -->
-<div id="print-area" style="display:none"></div>
+<!-- BOTÃO FIXO -->
+<div class="fab-area">
+  <button type="button" class="btn-secundario" id="btn-teste" onclick="imprimirTeste()">🔧 TESTE MÍNIMO</button>
+  <button type="button" class="btn-print" id="btn-imprimir" disabled onclick="imprimir()">
+    <span id="btn-icon">📡</span>
+    <span id="btn-text">IMPRIMIR VIA BLUETOOTH</span>
+  </button>
+</div>
+
+<!-- MODAL BT -->
+<div class="modal-bg" id="modal-bt">
+  <div class="modal">
+    <div class="modal-title">📡 Conectar Impressora</div>
+    <div class="modal-sub">
+      Chrome vai abrir a lista de dispositivos BLE próximos.<br>
+      Ligue a <strong>XD210 / PT260</strong> e selecione na lista.
+    </div>
+    <button type="button" class="modal-btn" onclick="conectarBluetooth()">Buscar Impressora</button>
+    <button type="button" class="modal-btn-sec" onclick="fecharModal()">Cancelar</button>
+  </div>
+</div>
 
 <!-- TOAST -->
-<div class="toast" id="toast">✓ Etiquetas enviadas para impressão</div>
+<div class="toast" id="toast"></div>
 
 <script>
 // ===== CONFIG =====
 const CONFIG = {
   marca: 'DUE',
   equipe: [
-    { code: 'RAFA', nome: 'Rafael', turno: 'A' },
+    { code: 'RAFA', nome: 'Rafael',    turno: 'A' },
     { code: 'FRAN', nome: 'Franciele', turno: 'A' },
-    { code: 'BEAT', nome: 'Beatriz', turno: 'B' },
-    { code: 'MANO', nome: 'Edmar', turno: 'B' },
-    { code: 'OZAN', nome: 'François', turno: 'B' },
-    { code: 'CHEF', nome: 'Genérico', turno: null },
+    { code: 'BEAT', nome: 'Beatriz',   turno: 'B' },
+    { code: 'MANO', nome: 'Edmar',     turno: 'B' },
+    { code: 'OZAN', nome: 'François',  turno: 'B' },
+    { code: 'CHEF', nome: 'Genérico',  turno: null },
   ],
-  categorias: {
-    tecnicas:   { emoji: '⭐', nome: 'Técnicas Exclusivas DUE' },
-    fundos:     { emoji: '🍲', nome: 'Fundos & Caldos' },
-    molhos:     { emoji: '🫙', nome: 'Molhos & Bases' },
-    proteinas:  { emoji: '🥩', nome: 'Proteínas Porcionadas' },
-    sobremesas: { emoji: '🍮', nome: 'Sobremesas' },
-    pures:      { emoji: '🥕', nome: 'Purês & Guarnições' },
-    crocantes:  { emoji: '🥬', nome: 'Crocantes' },
-    entrada:    { emoji: '📦', nome: 'Entradas (Recebimento)' },
-  },
   produtos: [
-    // Técnicas Exclusivas DUE
-    { nome: 'Bisque de Crustáceos', cat: 'tecnicas', tipo: 'producao', refrig: 3, congel:30 },
-    { nome: 'Demi-glace DUE', cat: 'tecnicas', tipo: 'producao', refrig: 5, congel:30 },
-    { nome: 'Gema Curada 48h', cat: 'tecnicas', tipo: 'porcao', refrig: 5, semCongel: true },
-    { nome: 'Pappardelle Artesanal', cat: 'tecnicas', tipo: 'porcao', refrig: 1, congel:30 },
-    { nome: 'Xerém Cremoso DUE', cat: 'tecnicas', tipo: 'producao', refrig: 3, congel:30 },
-    { nome: 'Picles de Maxixe', cat: 'tecnicas', tipo: 'producao', refrig: 14, semCongel: true },
-
-    // Fundos & Caldos
-    { nome: 'Fumet de Peixe', cat: 'fundos', tipo: 'producao', refrig: 2, congel:30 },
-    { nome: 'Caldo de Legumes', cat: 'fundos', tipo: 'producao', refrig: 3, congel:30 },
-    { nome: 'Caldo de Camarão', cat: 'fundos', tipo: 'producao', refrig: 2, congel:30 },
-
-    // Molhos & Bases
-    { nome: 'Molho de Tomate DUE', cat: 'molhos', tipo: 'producao', refrig: 4, congel:30 },
-    { nome: 'Ragù de Costela', cat: 'molhos', tipo: 'producao', refrig: 3, congel:30 },
-    { nome: 'Fonduta de Parmesão', cat: 'molhos', tipo: 'producao', refrig: 3, congel:30 },
-    { nome: 'Aioli / Lactonese', cat: 'molhos', tipo: 'producao', refrig: 5, semCongel: true },
-    { nome: 'Pesto Sergipano', cat: 'molhos', tipo: 'producao', refrig: 1, congel:30 },
-    { nome: 'Leite de Tigre', cat: 'molhos', tipo: 'producao', refrig: 1, semCongel: true },
-    { nome: 'Azeite Verde DUE', cat: 'molhos', tipo: 'producao', refrig: 7, semCongel: true },
-    { nome: 'Azeite Vermelho DUE', cat: 'molhos', tipo: 'producao', refrig: 14, semCongel: true },
-    { nome: 'Teriaki de Hibisco', cat: 'molhos', tipo: 'producao', refrig: 7, congel:30 },
-    { nome: 'Tomates Confitados', cat: 'molhos', tipo: 'producao', refrig: 5, semCongel: true },
-    { nome: 'Confit de Laranja', cat: 'molhos', tipo: 'producao', refrig: 14, congel:30 },
-    { nome: 'Massa do Taco', cat: 'molhos', tipo: 'producao', refrig: 2, congel:30 },
-    { nome: 'Massa Tempurá', cat: 'molhos', tipo: 'producao', refrig: 0, semCongel: true },
-    { nome: 'Pão de Batata DUE', cat: 'molhos', tipo: 'producao', refrig: 2, congel:30 },
-    { nome: 'Camarão Confitado', cat: 'molhos', tipo: 'producao', refrig: 2, congel:30 },
-    { nome: 'Vinagrete Tropical DUE', cat: 'molhos', tipo: 'producao', refrig: 3, semCongel: true },
-    { nome: 'Tucupi', cat: 'molhos', tipo: 'producao', refrig: 5, congel:30 },
-    { nome: 'Molho Béchamel', cat: 'molhos', tipo: 'producao', refrig: 3, congel:30 },
-
-    // Proteínas Porcionadas
-    { nome: 'Polvo Cozido', cat: 'proteinas', tipo: 'porcao', refrig: 3, congel:30 },
-    { nome: 'Polvo Porcionado', cat: 'proteinas', tipo: 'porcao', refrig: 2, congel:30 },
-    { nome: 'Costela Desfiada', cat: 'proteinas', tipo: 'porcao', refrig: 3, congel:30 },
-    { nome: 'Carne de Sol DUE', cat: 'proteinas', tipo: 'porcao', refrig: 3, congel:30 },
-    { nome: 'Confit de Pato', cat: 'proteinas', tipo: 'porcao', refrig: 5, congel:30 },
-    { nome: 'Charque Dessalgado', cat: 'proteinas', tipo: 'porcao', refrig: 1, semCongel: true },
-    { nome: 'Filé Mignon', cat: 'proteinas', tipo: 'porcao', refrig: 2, congel:30 },
-    { nome: 'Flat Iron', cat: 'proteinas', tipo: 'porcao', refrig: 2, congel:30 },
-    { nome: 'Carré de Cordeiro', cat: 'proteinas', tipo: 'porcao', refrig: 2, congel:30 },
-    { nome: 'Camarão', cat: 'proteinas', tipo: 'porcao', refrig: 1, congel:30 },
-    { nome: 'Robalo', cat: 'proteinas', tipo: 'porcao', refrig: 1, congel:30 },
-    { nome: 'Peito de Frango', cat: 'proteinas', tipo: 'porcao', refrig: 2, congel:30 },
-
-    // Sobremesas
-    { nome: 'Pannacota de Baunilha', cat: 'sobremesas', tipo: 'producao', refrig: 3, semCongel: true },
-    { nome: 'Ganache Chocolate 70%', cat: 'sobremesas', tipo: 'producao', refrig: 5, congel:30 },
-    { nome: 'Cheesecake Basco', cat: 'sobremesas', tipo: 'producao', refrig: 4, congel:30 },
-
-    // Purês & Guarnições
-    { nome: 'Purê de Mandioquinha', cat: 'pures', tipo: 'producao', refrig: 2, congel:30 },
-    { nome: 'Mousseline Banana', cat: 'pures', tipo: 'producao', refrig: 2, congel:30 },
-    { nome: 'Arroz Feijão Verde', cat: 'pures', tipo: 'producao', refrig: 2, congel:30 },
-    { nome: 'Creme de Abacate', cat: 'pures', tipo: 'producao', refrig: 1, semCongel: true },
-
-    // Crocantes
-    { nome: 'Chips Batata Doce', cat: 'crocantes', tipo: 'porcao', refrig: 2, semCongel: true },
-    { nome: 'Crocante de Tapioca', cat: 'crocantes', tipo: 'porcao', refrig: 2, semCongel: true },
-    { nome: 'Tuille Açúcar Mascavo', cat: 'crocantes', tipo: 'porcao', refrig: 2, semCongel: true },
-    { nome: 'Sagu Crocante', cat: 'crocantes', tipo: 'producao', refrig: 3, semCongel: true },
-    { nome: 'Suspiro Artesanal', cat: 'crocantes', tipo: 'producao', refrig: 5, semCongel: true },
-    { nome: 'Manjericão Desidratado', cat: 'crocantes', tipo: 'producao', refrig: 7, semCongel: true },
-
-    // Entradas (Recebimento)
-    { nome: 'Polvo Fresco', cat: 'entrada', tipo: 'entrada', refrig: 1, congel:30 },
-    { nome: 'Peixe Fresco', cat: 'entrada', tipo: 'entrada', refrig: 1, congel:30 },
-    { nome: 'Crustáceos Frescos', cat: 'entrada', tipo: 'entrada', refrig: 1, congel:30 },
-    { nome: 'Carnes (genérico)', cat: 'entrada', tipo: 'entrada', refrig: 2, congel:30 },
-    { nome: 'Laticínios', cat: 'entrada', tipo: 'entrada', refrig: 3, semCongel: true },
-    { nome: 'Hortifruti', cat: 'entrada', tipo: 'entrada', refrig: 3, semCongel: true },
-    { nome: 'Ostra', cat: 'entrada', tipo: 'entrada', refrig: 5, semCongel: true },
-    { nome: 'Lambreta', cat: 'entrada', tipo: 'entrada', refrig: 1, semCongel: true },
-    { nome: 'Lula', cat: 'entrada', tipo: 'entrada', refrig: 2, congel:30 },
-    { nome: 'Mexilhão', cat: 'entrada', tipo: 'entrada', refrig: 1, congel:30 },
+    { nome: 'Bisque de Crustáceos',    cat: 'tecnicas',   tipo: 'producao',  refrig: 3,  congel: 30 },
+    { nome: 'Demi-glace DUE',          cat: 'tecnicas',   tipo: 'producao',  refrig: 5,  congel: 30 },
+    { nome: 'Gema Curada 48h',         cat: 'tecnicas',   tipo: 'porcao',    refrig: 5,  semCongel: true },
+    { nome: 'Pappardelle Artesanal',   cat: 'tecnicas',   tipo: 'porcao',    refrig: 1,  congel: 30 },
+    { nome: 'Xerém Cremoso DUE',       cat: 'tecnicas',   tipo: 'producao',  refrig: 3,  congel: 30 },
+    { nome: 'Picles de Maxixe',        cat: 'tecnicas',   tipo: 'producao',  refrig: 14, semCongel: true },
+    { nome: 'Fumet de Peixe',          cat: 'fundos',     tipo: 'producao',  refrig: 2,  congel: 30 },
+    { nome: 'Caldo de Legumes',        cat: 'fundos',     tipo: 'producao',  refrig: 3,  congel: 30 },
+    { nome: 'Caldo de Camarão',        cat: 'fundos',     tipo: 'producao',  refrig: 2,  congel: 30 },
+    { nome: 'Molho de Tomate DUE',     cat: 'molhos',     tipo: 'producao',  refrig: 4,  congel: 30 },
+    { nome: 'Ragù de Costela',         cat: 'molhos',     tipo: 'producao',  refrig: 3,  congel: 30 },
+    { nome: 'Fonduta de Parmesão',     cat: 'molhos',     tipo: 'producao',  refrig: 3,  congel: 30 },
+    { nome: 'Aioli / Lactonese',       cat: 'molhos',     tipo: 'producao',  refrig: 5,  semCongel: true },
+    { nome: 'Pesto Sergipano',         cat: 'molhos',     tipo: 'producao',  refrig: 1,  congel: 30 },
+    { nome: 'Leite de Tigre',          cat: 'molhos',     tipo: 'producao',  refrig: 1,  semCongel: true },
+    { nome: 'Azeite Verde DUE',        cat: 'molhos',     tipo: 'producao',  refrig: 7,  semCongel: true },
+    { nome: 'Azeite Vermelho DUE',     cat: 'molhos',     tipo: 'producao',  refrig: 14, semCongel: true },
+    { nome: 'Teriaki de Hibisco',      cat: 'molhos',     tipo: 'producao',  refrig: 7,  congel: 30 },
+    { nome: 'Tomates Confitados',      cat: 'molhos',     tipo: 'producao',  refrig: 5,  semCongel: true },
+    { nome: 'Confit de Laranja',       cat: 'molhos',     tipo: 'producao',  refrig: 14, congel: 30 },
+    { nome: 'Massa do Taco',           cat: 'molhos',     tipo: 'producao',  refrig: 2,  congel: 30 },
+    { nome: 'Massa Tempurá',           cat: 'molhos',     tipo: 'producao',  refrig: 0,  semCongel: true },
+    { nome: 'Pão de Batata DUE',       cat: 'molhos',     tipo: 'producao',  refrig: 2,  congel: 30 },
+    { nome: 'Camarão Confitado',       cat: 'molhos',     tipo: 'producao',  refrig: 2,  congel: 30 },
+    { nome: 'Vinagrete Tropical DUE',  cat: 'molhos',     tipo: 'producao',  refrig: 3,  semCongel: true },
+    { nome: 'Tucupi',                  cat: 'molhos',     tipo: 'producao',  refrig: 5,  congel: 30 },
+    { nome: 'Molho Béchamel',          cat: 'molhos',     tipo: 'producao',  refrig: 3,  congel: 30 },
+    { nome: 'Polvo Cozido',            cat: 'proteinas',  tipo: 'porcao',    refrig: 3,  congel: 30 },
+    { nome: 'Polvo Porcionado',        cat: 'proteinas',  tipo: 'porcao',    refrig: 2,  congel: 30 },
+    { nome: 'Costela Desfiada',        cat: 'proteinas',  tipo: 'porcao',    refrig: 3,  congel: 30 },
+    { nome: 'Carne de Sol DUE',        cat: 'proteinas',  tipo: 'porcao',    refrig: 3,  congel: 30 },
+    { nome: 'Confit de Pato',          cat: 'proteinas',  tipo: 'porcao',    refrig: 5,  congel: 30 },
+    { nome: 'Charque Dessalgado',      cat: 'proteinas',  tipo: 'porcao',    refrig: 1,  semCongel: true },
+    { nome: 'Filé Mignon',             cat: 'proteinas',  tipo: 'porcao',    refrig: 2,  congel: 30 },
+    { nome: 'Flat Iron',               cat: 'proteinas',  tipo: 'porcao',    refrig: 2,  congel: 30 },
+    { nome: 'Carré de Cordeiro',       cat: 'proteinas',  tipo: 'porcao',    refrig: 2,  congel: 30 },
+    { nome: 'Camarão',                 cat: 'proteinas',  tipo: 'porcao',    refrig: 1,  congel: 30 },
+    { nome: 'Robalo',                  cat: 'proteinas',  tipo: 'porcao',    refrig: 1,  congel: 30 },
+    { nome: 'Peito de Frango',         cat: 'proteinas',  tipo: 'porcao',    refrig: 2,  congel: 30 },
+    { nome: 'Pannacota de Baunilha',   cat: 'sobremesas', tipo: 'producao',  refrig: 3,  semCongel: true },
+    { nome: 'Ganache Chocolate 70%',   cat: 'sobremesas', tipo: 'producao',  refrig: 5,  congel: 30 },
+    { nome: 'Cheesecake Basco',        cat: 'sobremesas', tipo: 'producao',  refrig: 4,  congel: 30 },
+    { nome: 'Purê de Mandioquinha',    cat: 'pures',      tipo: 'producao',  refrig: 2,  congel: 30 },
+    { nome: 'Mousseline Banana',       cat: 'pures',      tipo: 'producao',  refrig: 2,  congel: 30 },
+    { nome: 'Arroz Feijão Verde',      cat: 'pures',      tipo: 'producao',  refrig: 2,  congel: 30 },
+    { nome: 'Creme de Abacate',        cat: 'pures',      tipo: 'producao',  refrig: 1,  semCongel: true },
+    { nome: 'Chips Batata Doce',       cat: 'crocantes',  tipo: 'porcao',    refrig: 2,  semCongel: true },
+    { nome: 'Crocante de Tapioca',     cat: 'crocantes',  tipo: 'porcao',    refrig: 2,  semCongel: true },
+    { nome: 'Tuille Açúcar Mascavo',   cat: 'crocantes',  tipo: 'porcao',    refrig: 2,  semCongel: true },
+    { nome: 'Sagu Crocante',           cat: 'crocantes',  tipo: 'producao',  refrig: 3,  semCongel: true },
+    { nome: 'Suspiro Artesanal',       cat: 'crocantes',  tipo: 'producao',  refrig: 5,  semCongel: true },
+    { nome: 'Manjericão Desidratado',  cat: 'crocantes',  tipo: 'producao',  refrig: 7,  semCongel: true },
+    { nome: 'Polvo Fresco',            cat: 'entrada',    tipo: 'entrada',   refrig: 1,  congel: 30 },
+    { nome: 'Peixe Fresco',            cat: 'entrada',    tipo: 'entrada',   refrig: 1,  congel: 30 },
+    { nome: 'Crustáceos Frescos',      cat: 'entrada',    tipo: 'entrada',   refrig: 1,  congel: 30 },
+    { nome: 'Carnes (genérico)',        cat: 'entrada',    tipo: 'entrada',   refrig: 2,  congel: 30 },
+    { nome: 'Laticínios',              cat: 'entrada',    tipo: 'entrada',   refrig: 3,  semCongel: true },
+    { nome: 'Hortifruti',              cat: 'entrada',    tipo: 'entrada',   refrig: 3,  semCongel: true },
+    { nome: 'Ostra',                   cat: 'entrada',    tipo: 'entrada',   refrig: 5,  semCongel: true },
+    { nome: 'Lambreta',                cat: 'entrada',    tipo: 'entrada',   refrig: 1,  semCongel: true },
+    { nome: 'Lula',                    cat: 'entrada',    tipo: 'entrada',   refrig: 2,  congel: 30 },
+    { nome: 'Mexilhão',                cat: 'entrada',    tipo: 'entrada',   refrig: 1,  congel: 30 },
+    { nome: 'Álcool 70%',              cat: 'entrada',    tipo: 'entrada',   refrig: 30, semCongel: true },
   ],
+  catEmoji: {
+    tecnicas:'⭐', fundos:'🍲', molhos:'🫙', proteinas:'🥩',
+    sobremesas:'🍮', pures:'🥕', crocantes:'🥬', entrada:'📦'
+  },
+  catNomes: {
+    tecnicas:'Técnicas Exclusivas DUE', fundos:'Fundos & Caldos', molhos:'Molhos & Bases',
+    proteinas:'Proteínas Porcionadas', sobremesas:'Sobremesas', pures:'Purês & Guarnições',
+    crocantes:'Crocantes', entrada:'Entradas (Recebimento)'
+  }
 };
 
 // ===== ESTADO =====
-const state = {
-  chef: null,
-  chefCode: null,
-  tipo: 'porcao',
-  produto: null,
-  produtoObj: null,
-  storage: 'refrig',    // 'refrig' ou 'congel'
-  validadeDias: null,
-  peso: '',
-  unidade: 'g',
-  pesoBruto: '',
-  pesoLiquido: '',
-  fornecedor: '',
-  obs: '',
-  qty: 1,
-  turno: null,
-  log: []
+const S = {
+  chef: null, turno: null, tipo: 'porcao',
+  produto: null, produtoObj: null, storage: 'refrig',
+  validadeDias: null, qty: 1,
+  btDevice: null, btChar: null, btStatus: 'off',
+  log: [], labelSize: '80',
 };
 
-// ===== AUTO-DETECT TURNO =====
-function detectTurno() {
-  const h = new Date().getHours();
-  // Turno A: 06-14, Turno B: 14-22, Noturno: 22-06
-  if (h >= 6 && h < 14) return 'A';
-  if (h >= 14 && h < 22) return 'B';
-  return 'NOTURNO';
-}
-
-// ===== INIT CHEF BAR =====
+// ===== INIT =====
 function initChefBar() {
   const bar = document.getElementById('chef-bar');
-  CONFIG.equipe.forEach(chef => {
+  CONFIG.equipe.forEach(m => {
     const btn = document.createElement('button');
-    btn.className = 'chef-btn';
-    btn.textContent = chef.code;
-    btn.title = chef.nome + (chef.turno ? ' (Turno ' + chef.turno + ')' : '');
-    btn.onclick = function() { setChef(chef, this); };
+    btn.type = 'button'; btn.className = 'chef-btn';
+    btn.textContent = m.code;
+    btn.onclick = function() { setChef(m.code, m.turno, this); };
     bar.appendChild(btn);
   });
 }
 
-// ===== INIT PRODUCT DROPDOWN =====
-function initProdutoDropdown() {
-  const sel = document.getElementById('select-produto');
-  // Group by cat
-  const catOrder = ['tecnicas','fundos','molhos','proteinas','sobremesas','pures','crocantes','entrada'];
-  catOrder.forEach(catKey => {
-    const catInfo = CONFIG.categorias[catKey];
-    if (!catInfo) return;
-    const items = CONFIG.produtos.filter(p => p.cat === catKey);
-    if (items.length === 0) return;
-    const group = document.createElement('optgroup');
-    group.label = catInfo.emoji + ' ' + catInfo.nome;
-    items.forEach((prod, idx) => {
+function initProdutoSelect() {
+  const sel = document.getElementById('sel-produto');
+  const catOrder = []; const groups = {};
+  CONFIG.produtos.forEach((p, idx) => {
+    if (!groups[p.cat]) { groups[p.cat] = []; catOrder.push(p.cat); }
+    groups[p.cat].push({ ...p, idx });
+  });
+  catOrder.forEach(cat => {
+    const og = document.createElement('optgroup');
+    og.label = (CONFIG.catEmoji[cat] || '') + ' ' + (CONFIG.catNomes[cat] || cat);
+    groups[cat].forEach(p => {
       const opt = document.createElement('option');
-      // Store index in CONFIG.produtos
-      const globalIdx = CONFIG.produtos.indexOf(prod);
-      opt.value = globalIdx;
-      opt.textContent = prod.nome;
-      group.appendChild(opt);
+      opt.value = String(p.idx); opt.textContent = p.nome;
+      og.appendChild(opt);
     });
-    sel.appendChild(group);
+    sel.appendChild(og);
   });
 }
 
-// ===== CAMPOS POR TIPO =====
-function getCamposHTML(tipo) {
-  const turnoDetected = detectTurno();
-  const turnoOpts = `
-    <option value="A"${turnoDetected==='A'?' selected':''}>Turno A</option>
-    <option value="B"${turnoDetected==='B'?' selected':''}>Turno B</option>
-    <option value="NOTURNO"${turnoDetected==='NOTURNO'?' selected':''}>Noturno</option>
-  `;
-
-  if (tipo === 'porcao') {
-    return `
-      <div class="form-row">
-        <div class="form-group">
-          <label>Peso / Quantidade</label>
-          <input type="text" id="f-peso" placeholder="ex: 85g, 2 unid" oninput="atualizar()" />
-        </div>
-        <div class="form-group">
-          <label>Turno</label>
-          <select id="f-turno" onchange="atualizar()">${turnoOpts}</select>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Observação (opcional)</label>
-        <input type="text" id="f-obs" placeholder="ex: tempero limão" oninput="atualizar()" />
-      </div>
-    `;
-  }
-  if (tipo === 'producao') {
-    return `
-      <div class="form-row">
-        <div class="form-group">
-          <label>Peso Bruto</label>
-          <input type="text" id="f-pesobruto" placeholder="ex: 2400g" oninput="calcRendimento()" />
-        </div>
-        <div class="form-group">
-          <label>Rendimento Final</label>
-          <input type="text" id="f-pesoliquido" placeholder="ex: 1850g" oninput="calcRendimento()" />
-        </div>
-      </div>
-      <div id="rendimento-display" style="margin-bottom:14px; display:none">
-        <div class="section-title">Rendimento</div>
-        <div class="rendimento-bar-wrap">
-          <div class="rendimento-bar-bg"><div class="rendimento-bar-fill" id="rend-bar" style="width:0%"></div></div>
-          <div class="rendimento-pct" id="rend-pct">—%</div>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Turno</label>
-          <select id="f-turno" onchange="atualizar()">${turnoOpts}</select>
-        </div>
-      </div>
-    `;
-  }
-  if (tipo === 'entrada') {
-    // Build recebido por options from CONFIG.equipe
-    const recebidoOpts = CONFIG.equipe.map(c =>
-      `<option value="${c.code}">${c.nome} (${c.code})</option>`
-    ).join('');
-    return `
-      <div class="form-row">
-        <div class="form-group">
-          <label>Peso / Quantidade</label>
-          <input type="text" id="f-peso" placeholder="ex: 5200g, 10 unid" oninput="atualizar()" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Fornecedor</label>
-        <input type="text" id="f-fornecedor" placeholder="ex: Pescados NE" oninput="atualizar()" />
-      </div>
-      <div class="form-group">
-        <label>Recebido por</label>
-        <select id="f-turno" onchange="atualizar()">${recebidoOpts}</select>
-      </div>
-    `;
-  }
-  return '';
-}
-
-// ===== FUNÇÕES DE CONTROLE =====
-
-function setChef(chefObj, btn) {
-  state.chef = chefObj.code;
-  state.chefCode = chefObj.code;
-  // Auto-set turno from chef if available
-  if (chefObj.turno) {
-    state.turno = chefObj.turno;
-  }
+function setChef(code, turno, el) {
+  S.chef = code; S.turno = turno || 'A';
   document.querySelectorAll('.chef-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  atualizar();
+  el.classList.add('active'); atualizar();
 }
 
-function setTipo(tipo, card) {
-  state.tipo = tipo;
-  document.querySelectorAll('.type-card').forEach(c => c.classList.remove('active'));
-  card.classList.add('active');
-  renderCampos();
-  atualizar();
-}
-
-function renderCampos() {
-  document.getElementById('campos-dinamicos').innerHTML = getCamposHTML(state.tipo);
-}
-
-function changeQty(delta) {
-  state.qty = Math.max(1, Math.min(99, state.qty + delta));
-  document.getElementById('qty-display').textContent = state.qty;
-  document.getElementById('qty-badge').textContent = state.qty;
-  document.getElementById('qty-badge').style.display = state.qty > 1 ? 'flex' : 'none';
-  document.getElementById('btn-qty-label').textContent = state.qty === 1 ? '1 ETIQUETA' : state.qty + ' ETIQUETAS';
-  atualizar();
-}
-
-function onProdutoChange() {
-  const sel = document.getElementById('select-produto');
-  const val = sel.value;
-  if (val === '') {
-    state.produto = null;
-    state.produtoObj = null;
-    state.validadeDias = null;
-    state.storage = 'refrig';
-    document.getElementById('storage-area').style.display = 'none';
-    document.getElementById('validade-info').style.display = 'none';
-    atualizar();
-    return;
+function setTipo(tipo, el) {
+  S.tipo = tipo;
+  document.querySelectorAll('.tipo-card').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  const isPersonalizada = tipo === 'personalizada';
+  document.getElementById('sel-wrap').style.display        = isPersonalizada ? 'none' : 'flex';
+  document.getElementById('nome-livre-wrap').style.display  = isPersonalizada ? 'flex' : 'none';
+  document.getElementById('val-manual-wrap').style.display  = isPersonalizada ? 'flex' : 'none';
+  document.getElementById('storage-wrap').style.display     = 'none';
+  if (isPersonalizada) {
+    S.produto = null; S.produtoObj = null; S.validadeDias = null; S.storage = 'refrig';
+    document.getElementById('val-wrap').style.display = 'none';
+    document.getElementById('storage-wrap').style.display = 'none';
+  } else {
+    document.getElementById('sel-produto').value = '';
+    S.produto = null; S.produtoObj = null; S.validadeDias = null;
+    document.getElementById('val-manual-chip').style.display = 'none';
   }
-  const idx = parseInt(val);
-  const prod = CONFIG.produtos[idx];
-  state.produtoObj = prod;
-  state.produto = prod.nome;
-  state.storage = 'refrig'; // reset to default
+  renderCampos(); atualizar();
+}
 
-  // Auto-set tipo from product
-  const tipoSugerido = prod.tipo;
-  if (tipoSugerido) {
-    document.querySelectorAll('.type-card').forEach(c => c.classList.remove('active'));
-    const tipoIdx = ['porcao','producao','entrada'].indexOf(tipoSugerido);
-    if (tipoIdx >= 0) {
-      document.querySelectorAll('.type-card')[tipoIdx].classList.add('active');
-      state.tipo = tipoSugerido;
-      renderCampos();
-    }
+function setTab(id, el) {
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(d => d.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+}
+
+function onProduto() {
+  const val = document.getElementById('sel-produto').value;
+  if (!val) {
+    S.produto = null; S.produtoObj = null; S.validadeDias = null; S.storage = 'refrig';
+    document.getElementById('storage-wrap').style.display = 'none';
+    document.getElementById('val-wrap').style.display = 'none';
+    atualizar(); return;
   }
+  const idx = parseInt(val); const p = CONFIG.produtos[idx];
+  S.produto = p.nome; S.produtoObj = p; S.storage = 'refrig';
+  S.validadeDias = Math.min(p.refrig, 30);
+  renderStorageChips(); renderCampos(); atualizar();
+}
 
-  renderStorageChips();
-  updateValidadeFromStorage();
+function onValidadeManual() {
+  const inp = document.getElementById('campo-validadeManual');
+  const dias = parseInt(inp.value);
+  if (!isNaN(dias) && dias >= 0) {
+    S.validadeDias = dias;
+    const d = new Date(); d.setDate(d.getDate() + dias);
+    const chip = document.getElementById('val-manual-chip');
+    const chipTxt = document.getElementById('val-manual-chip-text');
+    chipTxt.textContent = 'Validade: ' + fmt(d) + ' (' + dias + 'd)';
+    chip.style.display = 'block';
+  } else {
+    S.validadeDias = null;
+    document.getElementById('val-manual-chip').style.display = 'none';
+  }
   atualizar();
 }
 
 function renderStorageChips() {
-  const prod = state.produtoObj;
-  const area = document.getElementById('storage-area');
+  const wrap = document.getElementById('storage-wrap');
   const chips = document.getElementById('storage-chips');
-  if (!prod) {
-    area.style.display = 'none';
-    return;
-  }
-  area.style.display = 'block';
-
-  const refrigDias = prod.refrig;
-  const hasCongel = !prod.semCongel && prod.congel !== undefined;
-
-  let html = '';
-  html += `<div class="storage-chip active" onclick="setStorage('refrig', this)">
-    <div>❄️ Refrigerado</div>
-    <div class="storage-days">${refrigDias}d</div>
-  </div>`;
-
-  if (hasCongel) {
-    html += `<div class="storage-chip" onclick="setStorage('congel', this)">
-      <div>🧊 Congelado</div>
-      <div class="storage-days">${prod.congel}d</div>
-    </div>`;
-  }
-
-  chips.innerHTML = html;
+  const p = S.produtoObj;
+  if (!p || S.tipo === 'personalizada') { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  const semCongel = !!p.semCongel;
+  chips.innerHTML =
+    '<button type="button" class="storage-chip' + (S.storage === 'refrig' ? ' active' : '') + '" onclick="setStorage('refrig')">' +
+      '<span class="storage-chip-icon">❄️</span>' +
+      '<span class="storage-chip-label">Refrigerado (' + p.refrig + 'd)</span>' +
+    '</button>' +
+    '<button type="button" class="storage-chip' + (S.storage === 'congel' ? ' active cong' : '') + (semCongel ? ' disabled' : '') + '"' +
+      (semCongel ? '' : ' onclick="setStorage('congel')"') + '>' +
+      '<span class="storage-chip-icon">🧊</span>' +
+      '<span class="storage-chip-label">' + (semCongel ? 'N/A' : 'Congelado (' + p.congel + 'd)') + '</span>' +
+    '</button>';
 }
 
-function setStorage(mode, chip) {
-  state.storage = mode;
-  document.querySelectorAll('.storage-chip').forEach(c => c.classList.remove('active'));
-  chip.classList.add('active');
-  updateValidadeFromStorage();
-  atualizar();
+function setStorage(mode) {
+  const p = S.produtoObj;
+  if (!p) return;
+  if (mode === 'congel' && p.semCongel) return;
+  S.storage = mode;
+  S.validadeDias = Math.min(mode === 'congel' ? p.congel : p.refrig, 30);
+  renderStorageChips(); renderValidade(); atualizar();
 }
 
-function updateValidadeFromStorage() {
-  const prod = state.produtoObj;
-  if (!prod) {
-    state.validadeDias = null;
-    document.getElementById('validade-info').style.display = 'none';
-    return;
+function renderCampos() {
+  const el = document.getElementById('campos'); const tipo = S.tipo; let html = '';
+  if (tipo === 'porcao') {
+    html += fieldHtml('peso', 'Peso / Quantidade', 'text', 'Ex: 200g, 6 unid');
+    html += fieldHtml('obs',  'Observação (opcional)', 'text', 'Ex: sem sal');
+  } else if (tipo === 'producao') {
+    html += fieldHtml('pesoBruto',   'Peso Bruto', 'text', 'Ex: 1,5kg');
+    html += fieldHtml('pesoLiquido', 'Peso Líquido / Rendimento', 'text', 'Ex: 1,2kg');
+    html += fieldHtml('obs',         'Observação (opcional)', 'text', '');
+  } else if (tipo === 'entrada') {
+    html += fieldHtml('fornecedor', 'Fornecedor', 'text', 'Ex: Peixaria Central');
+    html += fieldHtml('peso',       'Quantidade recebida', 'text', 'Ex: 5kg');
+    html += fieldHtml('obs',        'Observação (opcional)', 'text', '');
+  } else if (tipo === 'personalizada') {
+    html += fieldHtml('peso', 'Peso / Quantidade', 'text', 'Ex: 200g');
+    html += fieldHtml('obs',  'Observação (opcional)', 'text', '');
   }
-  const MAX_DIAS = 30; // política DUE: revisão obrigatória em 30 dias
-  if (state.storage === 'congel' && !prod.semCongel && prod.congel !== undefined) {
-    state.validadeDias = Math.min(prod.congel, MAX_DIAS);
-  } else {
-    state.validadeDias = Math.min(prod.refrig, MAX_DIAS);
-  }
-  mostrarValidade();
+  el.innerHTML = html;
+  el.querySelectorAll('input').forEach(inp => inp.addEventListener('input', atualizar));
+  if (tipo !== 'personalizada') renderValidade();
 }
 
-function mostrarValidade() {
-  if (state.validadeDias === null || state.validadeDias === undefined) {
-    document.getElementById('validade-info').style.display = 'none';
-    return;
-  }
-  const dias = state.validadeDias;
-  const dataVal = new Date();
-  dataVal.setDate(dataVal.getDate() + dias);
-  const chip = document.getElementById('validade-chip');
-  const storageTag = state.storage === 'congel' ? 'CONG' : 'REFR';
-  chip.textContent = `${storageTag} · D+${dias} — Vence ${formatDate(dataVal)}`;
-  chip.className = 'val-chip' + (dias <= 1 ? ' danger' : dias <= 3 ? ' warn' : '');
-  document.getElementById('validade-info').style.display = 'block';
+function fieldHtml(id, label, type, placeholder) {
+  return '<div class="field">' +
+    '<label>' + label + '</label>' +
+    '<input type="' + type + '" id="campo-' + id + '" placeholder="' + placeholder + '" autocomplete="off" autocorrect="off" spellcheck="false">' +
+  '</div>';
 }
 
-function calcRendimento() {
-  const bruto = parseFloat(document.getElementById('f-pesobruto')?.value) || 0;
-  const liq = parseFloat(document.getElementById('f-pesoliquido')?.value) || 0;
-  const wrap = document.getElementById('rendimento-display');
-  if (bruto > 0 && liq > 0) {
-    const pct = Math.min(100, (liq / bruto * 100)).toFixed(1);
-    document.getElementById('rend-bar').style.width = pct + '%';
-    document.getElementById('rend-pct').textContent = pct + '%';
+function renderValidade() {
+  const wrap = document.getElementById('val-wrap');
+  const chip = document.getElementById('val-chip');
+  if (S.validadeDias != null && S.validadeDias >= 0 && S.tipo !== 'personalizada') {
+    const d = new Date(); d.setDate(d.getDate() + S.validadeDias);
+    const stag = S.storage === 'congel' ? 'CONG' : 'REFR';
+    chip.textContent = 'Validade: ' + fmt(d) + ' (' + S.validadeDias + 'd · ' + stag + ')';
     wrap.style.display = 'block';
-  } else {
-    wrap.style.display = 'none';
-  }
-  atualizar();
+  } else { wrap.style.display = 'none'; }
+}
+
+function changeQty(delta) {
+  S.qty = Math.max(1, Math.min(20, S.qty + delta));
+  document.getElementById('qty-num').textContent = S.qty; atualizar();
+}
+
+function setLabelSize(size) {
+  S.labelSize = size;
+  document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sz-' + size).classList.add('active');
+  const lbl = size === '30' ? '50×30mm' : '50×80mm';
+  document.getElementById('preview-size-label').textContent = lbl;
+  renderPreview(); atualizar();
+  showToast('Etiqueta ' + lbl, 'ok');
 }
 
 function atualizar() {
   const btn = document.getElementById('btn-imprimir');
-  const ok = state.chef && state.produto;
-  btn.disabled = !ok;
+  const isPersonalizada = S.tipo === 'personalizada';
+  const nomeLivre = isPersonalizada ? (document.getElementById('campo-nomeLivre') || {}).value || '' : '';
+  const temProduto = isPersonalizada ? nomeLivre.trim().length > 0 : !!S.produto;
+  const podeImprimir = S.chef && temProduto && S.btStatus === 'connected';
+  btn.disabled = !podeImprimir;
+  const txt = document.getElementById('btn-text'); const icon = document.getElementById('btn-icon');
+  if (!S.chef)          { txt.textContent = 'SELECIONE O CHEF'; icon.textContent = '👤'; }
+  else if (!temProduto) { txt.textContent = isPersonalizada ? 'DIGITE O NOME' : 'SELECIONE O PRODUTO'; icon.textContent = '📋'; }
+  else if (S.btStatus !== 'connected') { txt.textContent = 'CONECTE A IMPRESSORA'; icon.textContent = '📡'; }
+  else {
+    txt.textContent = 'IMPRIMIR ' + (S.qty > 1 ? S.qty + ' ETIQUETAS' : '1 ETIQUETA');
+    icon.textContent = '🖨';
+  }
+  document.getElementById('btn-teste').style.display = S.btStatus === 'connected' ? 'block' : 'none';
   renderPreview();
 }
 
+// ===== PREVIEW =====
 function renderPreview() {
+  const wrap = document.getElementById('preview-wrap');
   const agora = new Date();
-  const dataVal = new Date();
-  if (state.validadeDias !== null) dataVal.setDate(dataVal.getDate() + state.validadeDias);
-
-  // produto
-  const prevProd = document.getElementById('prev-produto');
-  prevProd.textContent = state.produto || 'Selecione um produto';
-  prevProd.style.fontStyle = state.produto ? 'normal' : 'italic';
-  prevProd.style.color = state.produto ? '#000' : '#bbb';
-  prevProd.style.fontSize = state.produto ? '14px' : '12px';
-
-  // stripe e tipo tag
-  const stripe = document.querySelector('#preview-label .label-stripe');
-  const typeTag = document.querySelector('#preview-label .label-type-tag');
-  stripe.className = 'label-stripe ' + state.tipo;
-  const tipoLabel = {porcao:'Porção', producao:'Produção', entrada:'Entrada'}[state.tipo];
-  typeTag.textContent = tipoLabel;
-
-  // peso / pesos
-  let pesoText = '—';
-  if (state.tipo === 'porcao' || state.tipo === 'entrada') {
-    const el = document.getElementById('f-peso');
-    if (el && el.value) pesoText = el.value;
-  } else if (state.tipo === 'producao') {
-    const el1 = document.getElementById('f-pesobruto');
-    const el2 = document.getElementById('f-pesoliquido');
-    const bruto = el1?.value || '';
-    const liq = el2?.value || '';
-    if (bruto || liq) pesoText = bruto ? `${bruto} → ${liq || '?'}` : liq;
+  const isPersonalizada = S.tipo === 'personalizada';
+  const nomeLivre = isPersonalizada ? ((document.getElementById('campo-nomeLivre') || {}).value || '').trim() : null;
+  const nomeProduto = isPersonalizada ? (nomeLivre || 'Nome do produto') : (S.produto || 'Selecione produto');
+  const isProdSelected = isPersonalizada ? !!nomeLivre : !!S.produto;
+  let dataValStr = '—';
+  if (S.validadeDias != null && S.validadeDias >= 0) {
+    const d = new Date(); d.setDate(d.getDate() + S.validadeDias);
+    dataValStr = fmt(d);
   }
-  document.getElementById('prev-peso').textContent = pesoText;
+  const storageTag = S.storage === 'congel' ? 'CONG' : 'REFR';
+  const tipoTags = { porcao:'Porção', producao:'Produção', entrada:'Entrada', personalizada:'Custom' };
+  const pesoEl = document.getElementById('campo-peso');
+  const pesoVal = pesoEl ? pesoEl.value : '';
 
-  // prep
-  document.getElementById('prev-prep').textContent = formatDate(agora);
-
-  // validade with storage tag
-  const storageTag = state.storage === 'congel' ? 'CONG' : 'REFR';
-  if (state.validadeDias !== null) {
-    document.getElementById('prev-validade').textContent = formatDate(dataVal) + ' ' + storageTag;
+  if (S.labelSize === '30') {
+    wrap.innerHTML = `
+      <div class="label30">
+        <div class="label30-stripe ${S.tipo}"></div>
+        <div class="label30-header">
+          <span class="label30-brand">DUE</span>
+          <span class="label30-tipo">${tipoTags[S.tipo] || S.tipo}</span>
+        </div>
+        <div class="label30-produto" style="${!isProdSelected ? 'color:#bbb;font-style:italic;font-size:9px' : ''}">
+          ${escapeHtml(nomeProduto)}${pesoVal ? ' · ' + escapeHtml(pesoVal) : ''}
+        </div>
+        <div class="label30-val-wrap">
+          <span class="label30-val-label">VALIDADE · ${storageTag}</span>
+          <span class="label30-val-date">${dataValStr}</span>
+        </div>
+        <div class="label30-footer">
+          <span class="label30-footer-item">CHEF ${S.chef || '—'}</span>
+          <span class="label30-footer-item">${fmt(agora)}</span>
+          <span class="label30-footer-item">${agora.toTimeString().slice(0,5)}</span>
+        </div>
+      </div>`;
   } else {
-    document.getElementById('prev-validade').textContent = '—';
-  }
-
-  // chef/turno/hora
-  document.getElementById('prev-chef').textContent = state.chef ? 'Chef: ' + state.chef : 'CHEF —';
-  const turnoEl = document.getElementById('f-turno');
-  const turno = turnoEl?.value || detectTurno();
-  document.getElementById('prev-turno').textContent = 'Turno ' + turno;
-  document.getElementById('prev-hora').textContent = agora.toTimeString().slice(0,5);
-
-  // preview info
-  const info = document.getElementById('preview-info');
-  if (state.produto && state.chef) {
-    info.textContent = `${state.qty} etiqueta${state.qty > 1 ? 's' : ''} · ${state.produto} · Chef ${state.chef} · ${storageTag}`;
-  } else if (!state.chef) {
-    info.textContent = '⚠️ Selecione o chef ativo no topo da página';
-  } else {
-    info.textContent = 'Configure os campos ao lado para visualizar a etiqueta';
+    wrap.innerHTML = `
+      <div class="label">
+        <div class="label-stripe ${S.tipo}"></div>
+        <div class="label-header">
+          <span class="label-brand">DUE</span>
+          <span class="label-type-tag">${tipoTags[S.tipo] || S.tipo}</span>
+        </div>
+        <div class="label-produto" style="${!isProdSelected ? 'color:#bbb;font-style:italic;font-size:10px' : ''}">
+          ${escapeHtml(nomeProduto)}
+        </div>
+        <div class="label-body">
+          <div class="label-row">
+            <span class="label-key">Peso / Qtd</span>
+            <span class="label-val big">${escapeHtml(pesoVal) || '—'}</span>
+          </div>
+          <div class="label-row">
+            <span class="label-key">Prep</span>
+            <span class="label-val">${fmt(agora)} ${agora.toTimeString().slice(0,5)}</span>
+          </div>
+        </div>
+        <div class="label-validade">
+          <span class="label-val-label">VALIDADE · ${storageTag}</span>
+          <span class="label-val-date">${dataValStr}</span>
+        </div>
+        <div class="label-footer">
+          <span class="label-footer-item">CHEF ${S.chef || '—'}</span>
+          <span class="label-footer-item">T${S.turno || '—'}</span>
+          <span class="label-footer-item">${agora.toTimeString().slice(0,5)}</span>
+        </div>
+      </div>`;
   }
 }
 
-// ===== IMPRIMIR =====
-function buildLabelHTML(index) {
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function fmt(d) {
+  return d.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'2-digit' });
+}
+
+// ===== BLUETOOTH =====
+function toggleBluetooth() {
+  if (!navigator.bluetooth) { showToast('Web Bluetooth não suportado. Use Chrome Android via HTTPS.', 'error'); return; }
+  if (S.btStatus === 'connected') {
+    if (S.btDevice && S.btDevice.gatt.connected) S.btDevice.gatt.disconnect();
+    setBtStatus('off'); return;
+  }
+  document.getElementById('modal-bt').classList.add('show');
+}
+
+function fecharModal() { document.getElementById('modal-bt').classList.remove('show'); }
+
+async function conectarBluetooth() {
+  fecharModal(); setBtStatus('connecting');
+  try {
+    const device = await navigator.bluetooth.requestDevice({
+      acceptAllDevices: true,
+      optionalServices: [
+        '0000ff00-0000-1000-8000-00805f9b34fb',
+        '000018f0-0000-1000-8000-00805f9b34fb',
+        'e7810a71-73ae-499d-8c15-faa9aef0c3f2',
+        '00001101-0000-1000-8000-00805f9b34fb'
+      ]
+    });
+    S.btDevice = device;
+    device.addEventListener('gattserverdisconnected', onDisconnect);
+    const server = await device.gatt.connect();
+    let char = null;
+    const services = await server.getPrimaryServices();
+    for (const svc of services) {
+      try {
+        const chars = await svc.getCharacteristics();
+        for (const c of chars) {
+          if (c.properties.write || c.properties.writeWithoutResponse) { char = c; break; }
+        }
+        if (char) break;
+      } catch(e) {}
+    }
+    if (!char) throw new Error('Característica de escrita não encontrada');
+    S.btChar = char;
+    setBtStatus('connected', device.name || 'Impressora');
+    showToast('✓ Conectado: ' + (device.name || 'Impressora'), 'ok');
+    atualizar();
+  } catch(err) {
+    setBtStatus('off');
+    if (err.name !== 'NotFoundError') showToast('Erro: ' + err.message, 'error');
+    else showToast('Nenhum dispositivo selecionado', 'warn');
+  }
+}
+
+function onDisconnect() {
+  S.btChar = null; setBtStatus('off');
+  showToast('Impressora desconectada', 'warn'); atualizar();
+}
+
+function setBtStatus(status, name) {
+  S.btStatus = status;
+  const pill = document.getElementById('bt-pill');
+  const dot  = document.getElementById('bt-dot');
+  const lbl  = document.getElementById('bt-label');
+  pill.className = 'bt-pill' + (status==='connected'?' connected':status==='connecting'?' connecting':'');
+  dot.className  = 'bt-dot' + (status==='connecting'?' pulse':'');
+  lbl.textContent = status==='connected'?(name||'Conectado'):status==='connecting'?'…':'BT';
+}
+
+async function enviarTSPL(tspl) {
+  if (!S.btChar) throw new Error('Impressora não conectada');
+  const data = new TextEncoder().encode(tspl);
+  const CHUNK = 20, DELAY = 30;
+  for (let i = 0; i < data.length; i += CHUNK) {
+    const chunk = data.slice(i, i + CHUNK);
+    if (S.btChar.properties.writeWithoutResponse) await S.btChar.writeValueWithoutResponse(chunk);
+    else await S.btChar.writeValue(chunk);
+    if (i + CHUNK < data.length) await sleep(DELAY);
+  }
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function imprimirTeste() {
+  if (!S.btChar) { showToast('Impressora não conectada', 'error'); return; }
+  const R = '\r\n';
+  const t = 'SIZE 50 mm, ' + (S.labelSize === '30' ? '30' : '80') + ' mm' + R +
+    'GAP 3 mm, 0' + R + 'DIRECTION 1' + R + 'CLS' + R +
+    'TEXT 10,20,"3",0,1,1,"DUE TESTE ' + S.labelSize + 'mm"' + R +
+    'TEXT 10,60,"2",0,1,1,"TSPL OK - ' + new Date().toTimeString().slice(0,5) + '"' + R +
+    'PRINT 1,1' + R;
+  try {
+    showToast('Enviando teste…', 'warn');
+    await enviarTSPL(t);
+    showToast('✓ Teste enviado!', 'ok');
+  } catch(e) { showToast('Erro: ' + e.message, 'error'); }
+}
+
+function semAcento(str) {
+  if (!str) return '';
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^\x00-\x7F]/g,'');
+}
+
+function centrX(texto, charW) {
+  return Math.max(0, Math.floor((400 - texto.length * charW) / 2));
+}
+
+function quebrarLinha(texto, maxChars) {
+  const linhas = []; let t = texto;
+  while (t.length > 0 && linhas.length < 3) {
+    if (t.length <= maxChars) { linhas.push(t); break; }
+    let corte = t.lastIndexOf(' ', maxChars);
+    if (corte <= 0) corte = maxChars;
+    linhas.push(t.substring(0, corte).trim());
+    t = t.substring(corte).trim();
+  }
+  return linhas;
+}
+
+function buildTSPL(dados) {
+  return S.labelSize === '30' ? buildTSPL30(dados) : buildTSPL80(dados);
+}
+
+function buildTSPL80(dados) {
+  const { produto, tipo, validadeDias, qty, chef, storage } = dados;
+  const peso       = semAcento(dados.peso || '');
+  const pesoBruto  = semAcento(dados.pesoBruto || '');
+  const pesoLiq    = semAcento(dados.pesoLiquido || '');
+  const fornecedor = semAcento(dados.fornecedor || '');
+  const obs        = semAcento(dados.obs || '');
+  const prod       = semAcento(produto);
   const agora = new Date();
-  const dataVal = new Date();
-  if (state.validadeDias !== null) dataVal.setDate(dataVal.getDate() + state.validadeDias);
-
-  const turnoEl = document.getElementById('f-turno');
-  const turno = turnoEl?.value || detectTurno();
-
-  let pesoText = '—';
-  let pesoExtraHTML = '';
-
-  if (state.tipo === 'porcao' || state.tipo === 'entrada') {
-    const el = document.getElementById('f-peso');
-    if (el && el.value) pesoText = el.value;
-  } else if (state.tipo === 'producao') {
-    const el1 = document.getElementById('f-pesobruto');
-    const el2 = document.getElementById('f-pesoliquido');
-    const bruto = parseFloat(el1?.value) || 0;
-    const liq = parseFloat(el2?.value) || 0;
-    pesoText = el1?.value || '—';
-    if (bruto > 0 && liq > 0) {
-      const pct = (liq / bruto * 100).toFixed(0);
-      pesoExtraHTML = `
-        <hr class="label-divider">
-        <div class="label-row">
-          <span class="label-key">Rend. final</span>
-          <span class="label-val">${el2.value} (${pct}%)</span>
-        </div>
-        <div class="rendimento-bar-wrap" style="margin:2px 0">
-          <div class="rendimento-bar-bg"><div class="rendimento-bar-fill" style="width:${pct}%"></div></div>
-        </div>`;
+  const dataPrep = fmt(agora);
+  const hora     = agora.toTimeString().slice(0, 5);
+  let dataVal = 'S/VALIDADE';
+  if (validadeDias != null && validadeDias >= 0) {
+    const d = new Date(); d.setDate(d.getDate() + validadeDias);
+    dataVal = fmt(d);
+  }
+  const tipoLabel  = { porcao:'PORCAO', producao:'PRODUCAO', entrada:'ENTRADA', personalizada:'CUSTOM' }[tipo] || tipo;
+  const storageTag = storage === 'congel' ? 'CONG' : 'REFR';
+  let pesoLine = peso || '-'; let rendLine = '';
+  if (tipo === 'producao' && pesoBruto && pesoLiq) {
+    const pb = parseFloat(pesoBruto.replace(',','.'));
+    const pl = parseFloat(pesoLiq.replace(',','.'));
+    if (pb > 0) {
+      rendLine = 'Rend: ' + pesoLiq + ' (' + ((pl/pb)*100).toFixed(0) + '%)';
+      pesoLine = pesoBruto;
     }
   }
-
-  const obsEl = document.getElementById('f-obs');
-  const obs = obsEl?.value || '';
-
-  const fornecedorEl = document.getElementById('f-fornecedor');
-  const forn = fornecedorEl?.value || '';
-
-  const tipoLabel = {porcao:'Porção', producao:'Produção', entrada:'Entrada'}[state.tipo];
-  const storageTag = state.storage === 'congel' ? 'CONG' : 'REFR';
-  const validadeText = state.validadeDias !== null ? formatDate(dataVal) : '—';
-
-  return `
-    <div class="label">
-      <div class="label-stripe ${state.tipo}"></div>
-      <div class="label-header">
-        <span class="label-brand">${CONFIG.marca}</span>
-        <span class="label-type-tag">${tipoLabel}</span>
-      </div>
-      <div class="label-produto">${state.produto}</div>
-      <div class="label-body">
-        <div class="label-row">
-          <span class="label-key">Peso / Qtd</span>
-          <span class="label-val big">${pesoText}</span>
-        </div>
-        ${pesoExtraHTML}
-        ${forn ? `<hr class="label-divider"><div class="label-row"><span class="label-key">Fornecedor</span><span class="label-val">${forn}</span></div>` : ''}
-        ${obs ? `<hr class="label-divider"><div class="label-row"><span class="label-key">Obs</span><span class="label-val">${obs}</span></div>` : ''}
-        <hr class="label-divider">
-        <div class="label-row">
-          <span class="label-key">Prep</span>
-          <span class="label-val">${formatDate(agora)}</span>
-        </div>
-      </div>
-      <div class="label-validade-block">
-        <span class="label-val-label">Validade <span class="label-storage-tag">${storageTag}</span></span>
-        <span class="label-val-date">${validadeText}</span>
-      </div>
-      <div class="label-footer">
-        <span class="label-footer-item">Chef: ${state.chef}</span>
-        <span class="label-footer-item">T${turno}</span>
-        <span class="label-footer-item">${agora.toTimeString().slice(0,5)}</span>
-      </div>
-    </div>`;
-}
-
-function imprimir() {
-  if (!state.chef || !state.produto) return;
-
-  // montar área de impressão
-  const area = document.getElementById('print-area');
-  let html = '';
-  for (let i = 0; i < state.qty; i++) {
-    html += buildLabelHTML(i);
+  const R = '\r\n'; const W = 400; let c = '';
+  c += 'SIZE 50 mm, 80 mm' + R;
+  c += 'GAP 3 mm, 0' + R;
+  c += 'DIRECTION 1' + R;
+  c += 'REFERENCE 0,0' + R;
+  c += 'OFFSET 0 mm' + R;
+  c += 'SET PEEL OFF' + R;
+  c += 'SET CUTTER OFF' + R;
+  c += 'CLS' + R;
+  const LH3 = 48;
+  const linhasProd = quebrarLinha(prod, 14);
+  const alturaB1   = linhasProd.length * LH3;
+  let y = 10 + Math.floor((186 - alturaB1) / 2);
+  for (const linha of linhasProd) {
+    c += 'TEXT ' + centrX(linha, 20) + ',' + y + ',"3",0,2,2,"' + linha + '"' + R;
+    y += LH3;
   }
-  area.innerHTML = html;
-  area.style.display = 'flex';
-
-  // registrar no log
-  registrarLog();
-
-  // print
-  setTimeout(() => {
-    window.print();
-    area.style.display = 'none';
-    showToast(`✓ ${state.qty} etiqueta${state.qty > 1 ? 's' : ''} enviada${state.qty > 1 ? 's' : ''} para impressão`);
-  }, 100);
+  c += 'BAR 20,197,' + (W-40) + ',1' + R;
+  const linhasB2 = [];
+  linhasB2.push(pesoLine + '   ' + tipoLabel);
+  if (rendLine)   linhasB2.push(rendLine);
+  if (fornecedor) linhasB2.push('Forn: ' + fornecedor.substring(0,22));
+  if (obs) for (const lo of quebrarLinha(obs, 24)) linhasB2.push(lo);
+  const LH2 = 26; const alturaB2 = linhasB2.length * LH2;
+  y = 198 + Math.floor((152 - alturaB2) / 2);
+  for (const t of linhasB2) {
+    c += 'TEXT ' + centrX(t, 10) + ',' + y + ',"2",0,1,1,"' + t + '"' + R;
+    y += LH2;
+  }
+  c += 'BAR 20,352,' + (W-40) + ',1' + R;
+  const valLabel = 'VALIDADE . ' + storageTag;
+  const yVL = 353 + Math.floor((184 - (14+8+52)) / 2);
+  c += 'TEXT ' + centrX(valLabel, 8) + ',' + yVL + ',"1",0,1,1,"' + valLabel + '"' + R;
+  c += 'TEXT ' + centrX(dataVal, 24) + ',' + (yVL+22) + ',"4",0,2,2,"' + dataVal + '"' + R;
+  c += 'BAR 20,539,' + (W-40) + ',1' + R;
+  const metaLine = semAcento(chef) + '   ' + dataPrep + '   ' + hora;
+  const yMeta = 540 + Math.floor((89-20)/2) - 6;
+  c += 'TEXT ' + centrX(metaLine, 10) + ',' + yMeta + ',"2",0,1,1,"' + metaLine + '"' + R;
+  c += 'PRINT ' + qty + ',1' + R;
+  return c;
 }
 
-function previewOnly() {
-  if (!state.produto) { showToast('Selecione um produto primeiro'); return; }
-  const area = document.getElementById('print-area');
-  area.innerHTML = buildLabelHTML(0);
-  area.style.display = 'flex';
-  window.print();
-  area.style.display = 'none';
-}
-
-// ===== LOG =====
-function registrarLog() {
+function buildTSPL30(dados) {
+  const { produto, tipo, validadeDias, qty, chef, storage } = dados;
+  const peso = semAcento(dados.peso || '');
+  const obs  = semAcento(dados.obs || '');
+  const prod = semAcento(produto);
   const agora = new Date();
-  const turnoEl = document.getElementById('f-turno');
-  const turno = turnoEl?.value || detectTurno();
-
-  let peso = '—';
-  if (state.tipo === 'porcao' || state.tipo === 'entrada') {
-    const el = document.getElementById('f-peso');
-    if (el) peso = el.value || '—';
-  } else {
-    const el1 = document.getElementById('f-pesobruto');
-    const el2 = document.getElementById('f-pesoliquido');
-    const b = el1?.value || '';
-    const l = el2?.value || '';
-    if (b && l) {
-      const pct = ((parseFloat(l)/parseFloat(b))*100).toFixed(0);
-      peso = `${b}→${l} (${pct}%)`;
-    } else peso = b || l || '—';
+  const dataPrep = fmt(agora);
+  const hora     = agora.toTimeString().slice(0, 5);
+  let dataVal = 'S/VAL';
+  if (validadeDias != null && validadeDias >= 0) {
+    const d = new Date(); d.setDate(d.getDate() + validadeDias);
+    dataVal = fmt(d);
   }
+  const tipoLabel  = { porcao:'PORCAO', producao:'PRODUCAO', entrada:'ENTRADA', personalizada:'CUSTOM' }[tipo] || tipo;
+  const storageTag = storage === 'congel' ? 'CONG' : 'REFR';
+  const valLabel   = 'VALIDADE . ' + storageTag;
+  const R = '\r\n'; const W = 400; let c = '';
+  c += 'SIZE 50 mm, 30 mm' + R;
+  c += 'GAP 3 mm, 0' + R;
+  c += 'DIRECTION 1' + R;
+  c += 'REFERENCE 0,0' + R;
+  c += 'OFFSET 0 mm' + R;
+  c += 'SET PEEL OFF' + R;
+  c += 'SET CUTTER OFF' + R;
+  c += 'CLS' + R;
+  c += 'BAR 0,0,' + W + ',5' + R;
+  c += 'TEXT 10,8,"1",0,1,1,"DUE"' + R;
+  const tipoShort = semAcento(tipoLabel);
+  c += 'TEXT ' + (W - tipoShort.length * 7 - 10) + ',8,"1",0,1,1,"' + tipoShort + '"' + R;
+  c += 'BAR 10,24,' + (W-20) + ',1' + R;
+  const linhasProd = quebrarLinha(prod, 14);
+  let y = 30;
+  for (const l of linhasProd.slice(0, 2)) {
+    c += 'TEXT ' + centrX(l, 20) + ',' + y + ',"3",0,2,1,"' + l + '"' + R;
+    y += 22;
+  }
+  if (peso && linhasProd.length <= 1) {
+    const pesoTxt = semAcento(peso);
+    c += 'TEXT ' + (W - pesoTxt.length * 8 - 10) + ',52,"2",0,1,1,"' + pesoTxt + '"' + R;
+  }
+  c += 'BAR 10,76,' + (W-20) + ',1' + R;
+  c += 'TEXT ' + centrX(valLabel, 7) + ',82,"1",0,1,1,"' + valLabel + '"' + R;
+  c += 'TEXT ' + centrX(dataVal, 20) + ',96,"3",0,2,2,"' + dataVal + '"' + R;
+  c += 'BAR 10,144,' + (W-20) + ',1' + R;
+  const footLine = semAcento(chef) + '  ' + dataPrep + '  ' + hora;
+  c += 'TEXT ' + centrX(footLine, 7) + ',150,"1",0,1,1,"' + footLine + '"' + R;
+  c += 'PRINT ' + qty + ',1' + R;
+  return c;
+}
 
-  const dataVal = state.validadeDias !== null ? (() => {
-    const d = new Date(); d.setDate(d.getDate() + state.validadeDias); return formatDate(d);
-  })() : '—';
-
-  const storageTag = state.storage === 'congel' ? 'CONG' : 'REFR';
-
-  const entry = {
-    hora: agora.toTimeString().slice(0,5),
-    tipo: state.tipo,
-    produto: state.produto,
-    peso,
-    storage: storageTag,
-    validade: dataVal,
-    qty: state.qty,
-    chef: state.chef || '—'
+async function imprimir() {
+  if (!S.chef || S.btStatus !== 'connected') return;
+  const isPersonalizada = S.tipo === 'personalizada';
+  const getCampo = id => { const el = document.getElementById('campo-' + id); return el ? el.value.trim() : ''; };
+  const nomeProduto = isPersonalizada ? getCampo('nomeLivre') : S.produto;
+  if (!nomeProduto) {
+    showToast(isPersonalizada ? 'Digite o nome do produto' : 'Selecione o produto', 'warn'); return;
+  }
+  const dados = {
+    produto: nomeProduto, tipo: S.tipo, validadeDias: S.validadeDias,
+    storage: S.storage, qty: S.qty, chef: S.chef, turno: S.turno,
+    peso: getCampo('peso'), pesoBruto: getCampo('pesoBruto'),
+    pesoLiquido: getCampo('pesoLiquido'), fornecedor: getCampo('fornecedor'), obs: getCampo('obs'),
   };
-
-  state.log.unshift(entry);
-  renderLog();
+  const tspl = buildTSPL(dados);
+  const btn = document.getElementById('btn-imprimir');
+  const icon = document.getElementById('btn-icon');
+  const txt  = document.getElementById('btn-text');
+  btn.classList.add('sending'); btn.disabled = true;
+  icon.textContent = '⏳'; txt.textContent = 'ENVIANDO…';
+  try {
+    await enviarTSPL(tspl);
+    btn.classList.remove('sending'); btn.classList.add('success');
+    icon.textContent = '✓';
+    txt.textContent = S.qty + ' ETIQUETA' + (S.qty>1?'S':'') + ' ENVIADA' + (S.qty>1?'S':'') + '!';
+    showToast('✓ ' + S.qty + ' etiqueta' + (S.qty>1?'s':'') + ' impressa' + (S.qty>1?'s':'') + '!', 'ok');
+    const stag = S.storage === 'congel' ? 'CONG' : 'REFR';
+    S.log.unshift({ produto: nomeProduto, tipo: S.tipo, qty: S.qty, chef: S.chef, storage: stag, size: S.labelSize + 'mm', hora: new Date().toTimeString().slice(0,5) });
+    renderLog();
+    setTimeout(() => {
+      btn.classList.remove('success'); btn.disabled = false;
+      icon.textContent = '🖨';
+      txt.textContent = 'IMPRIMIR ' + (S.qty>1 ? S.qty+' ETIQUETAS' : '1 ETIQUETA');
+    }, 2500);
+  } catch(err) {
+    btn.classList.remove('sending'); btn.disabled = false;
+    icon.textContent = '📡'; txt.textContent = 'IMPRIMIR VIA BLUETOOTH';
+    showToast('Erro: ' + err.message, 'error');
+  }
 }
 
 function renderLog() {
-  const tbody = document.getElementById('log-tbody');
-  document.getElementById('log-count').textContent = state.log.length + ' impressão' + (state.log.length !== 1 ? 'ões' : '');
-
-  if (state.log.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" class="log-empty">Nenhuma impressão registrada ainda</td></tr>';
+  const el = document.getElementById('log-lista');
+  if (!S.log.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px;font-size:13px">Nenhuma impressão ainda</div>';
     return;
   }
-
-  tbody.innerHTML = state.log.map(e => `
-    <tr>
-      <td>${e.hora}</td>
-      <td><span class="tag-tipo ${e.tipo}">${e.tipo}</span></td>
-      <td>${e.produto}</td>
-      <td>${e.peso}</td>
-      <td>${e.storage}</td>
-      <td>${e.validade}</td>
-      <td><strong>${e.qty}×</strong></td>
-      <td>${e.chef}</td>
-    </tr>
-  `).join('');
+  el.innerHTML = S.log.map(l =>
+    '<div class="log-item">' +
+    '<div class="log-item-nome">' + l.produto + ' × ' + l.qty + '</div>' +
+    '<div class="log-item-meta">' + l.tipo + ' · ' + l.storage + ' · ' + l.size + ' · ' + l.chef + ' · ' + l.hora + '</div>' +
+    '</div>'
+  ).join('');
 }
 
-function exportarCSV() {
-  if (state.log.length === 0) { showToast('Nenhum registro para exportar'); return; }
-  const header = 'Data,Hora,Tipo,Produto,Peso/Qtd,Armazenamento,Validade,Qt Etiquetas,Chef';
-  const hoje = new Date().toLocaleDateString('pt-BR');
-  const rows = state.log.map(e =>
-    `${hoje},${e.hora},${e.tipo},"${e.produto}","${e.peso}",${e.storage},${e.validade},${e.qty},${e.chef}`
-  );
-  const csv = [header, ...rows].join('\n');
-  const blob = new Blob([csv], {type:'text/csv'});
-  const url = URL.createObjectURL(blob);
+function exportCSV() {
+  if (!S.log.length) { showToast('Nenhum dado para exportar', 'warn'); return; }
+  const rows = ['produto,tipo,storage,size,qty,chef,hora',
+    ...S.log.map(l => [l.produto, l.tipo, l.storage, l.size, l.qty, l.chef, l.hora].join(','))];
+  const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
   const a = document.createElement('a');
-  a.href = url;
-  a.download = `DUE_Etiquetas_${hoje.replace(/\//g,'-')}.csv`;
+  a.href = URL.createObjectURL(blob);
+  a.download = 'DUE_log_' + new Date().toISOString().slice(0,10) + '.csv';
   a.click();
-  showToast('CSV exportado!');
 }
 
-// ===== ETIQUETA PERSONALIZADA =====
-function abrirCustom() {
-  document.getElementById('modal-custom').style.display = 'flex';
-  atualizarPreviewCustom();
-}
-function fecharCustom() { document.getElementById('modal-custom').style.display = 'none'; }
-
-function toggleValCustom() {
-  const tipo = document.getElementById('cu-val-tipo').value;
-  document.getElementById('cu-val-dias-wrap').style.display = tipo === 'dias'  ? 'block' : 'none';
-  document.getElementById('cu-val-data-wrap').style.display = tipo === 'data'  ? 'block' : 'none';
-  atualizarPreviewCustom();
-}
-
-function calcularValCustom() {
-  const tipo = document.getElementById('cu-val-tipo').value;
-  if (tipo === 'imediato') return 'USO IMEDIATO';
-  if (tipo === 'data') {
-    const v = document.getElementById('cu-val-data').value;
-    return v ? new Date(v+'T12:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'}) : '—';
-  }
-  const dias = parseInt(document.getElementById('cu-val-dias').value) || 1;
-  const d = new Date(); d.setDate(d.getDate() + dias);
-  return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'});
+function switchLoteTab(tab) {
+  document.getElementById('lote-painel-json').style.display = tab==='json' ? 'block' : 'none';
+  document.getElementById('lote-painel-csv').style.display  = tab==='csv'  ? 'block' : 'none';
+  const bJ = document.getElementById('lote-tab-json');
+  const bC = document.getElementById('lote-tab-csv');
+  bJ.style.background  = tab==='json' ? 'var(--accent)'   : 'var(--surface2)';
+  bJ.style.color       = tab==='json' ? '#1a1a1a'         : 'var(--muted)';
+  bJ.style.borderColor = tab==='json' ? 'var(--accent)'   : 'var(--border)';
+  bC.style.background  = tab==='csv'  ? 'var(--accent)'   : 'var(--surface2)';
+  bC.style.color       = tab==='csv'  ? '#1a1a1a'         : 'var(--muted)';
+  bC.style.borderColor = tab==='csv'  ? 'var(--accent)'   : 'var(--border)';
 }
 
-function atualizarPreviewCustom() {
-  const prod    = document.getElementById('cu-produto').value  || 'Produto';
-  const detalhe = document.getElementById('cu-detalhe').value  || '';
-  const chef    = document.getElementById('cu-chef').value;
-  const peso    = document.getElementById('cu-peso').value     || '';
-  const obs     = document.getElementById('cu-obs').value      || '';
-  const storage = document.getElementById('cu-storage').value;
-  const validade = calcularValCustom();
-  const storageMap = {refrig:'❄️ REFRIGERADO', cong:'🧊 CONGELADO', amb:'🌡️ TEMP. AMBIENTE'};
-
-  document.getElementById('cu-prev-produto').textContent  = prod;
-  document.getElementById('cu-prev-detalhe').textContent  = detalhe;
-  document.getElementById('cu-prev-meta').textContent     = [peso, chef].filter(Boolean).join(' · ');
-  document.getElementById('cu-prev-storage').textContent  = storageMap[storage] || storage;
-  document.getElementById('cu-prev-validade').textContent = validade;
-  document.getElementById('cu-prev-obs').textContent      = obs;
-}
-
-function imprimirCustom() {
-  const prod    = document.getElementById('cu-produto').value;
-  if (!prod.trim()) { showToast('Informe o nome do produto'); return; }
-  const detalhe = document.getElementById('cu-detalhe').value;
-  const chef    = document.getElementById('cu-chef').value;
-  const peso    = document.getElementById('cu-peso').value;
-  const obs     = document.getElementById('cu-obs').value;
-  const storage = document.getElementById('cu-storage').value;
-  const validade = calcularValCustom();
-  const storageMap = {refrig:'❄️ REFRIGERADO', cong:'🧊 CONGELADO', amb:'🌡️ TEMP. AMBIENTE'};
-  const hora  = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-  const hoje  = new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'});
-
-  const labelHTML = `
-    <div style="width:50mm;height:80mm;padding:4mm 3mm;font-family:'Segoe UI',sans-serif;position:relative;overflow:hidden;box-sizing:border-box">
-      <div style="font-size:7pt;color:#888;text-align:center;border-bottom:1px solid #ddd;padding-bottom:2mm;margin-bottom:2mm">⭐ DUE</div>
-      <div style="font-size:15pt;font-weight:700;color:#111;line-height:1.2;margin-bottom:1mm">${prod}</div>
-      ${detalhe ? `<div style="font-size:8pt;color:#555;margin-bottom:2mm">${detalhe}</div>` : ''}
-      <div style="font-size:7pt;color:#888;margin-bottom:2mm">${[peso,chef,hoje+' '+hora].filter(Boolean).join(' · ')}</div>
-      <div style="border-top:1px solid #ccc;margin-bottom:2mm"></div>
-      <div style="font-size:9pt;font-weight:600;color:#111;margin-bottom:2mm">${storageMap[storage]||storage}</div>
-      <div style="font-size:18pt;font-weight:700;color:#111;text-align:center;border:1.5px solid #111;padding:1mm;margin-bottom:1mm">${validade}</div>
-      <div style="font-size:7pt;color:#888;text-align:center;margin-bottom:2mm">Vence em:</div>
-      ${obs ? `<div style="font-size:7pt;color:#555;border-top:1px solid #eee;padding-top:1mm">${obs}</div>` : ''}
-    </div>`;
-
-  const pw = window.open('','_blank','width=250,height=420');
-  pw.document.write(`<!DOCTYPE html><html><head><style>@page{size:50mm 80mm;margin:0}body{margin:0}</style></head><body>${labelHTML}</body></html>`);
-  pw.document.close();
-  setTimeout(()=>{ pw.print(); pw.close(); }, 300);
-
-  // log
-  state.log.push({ hora, tipo:'personalizada', produto:prod, peso:peso||'—', storage, validade, qty:1, chef });
-  renderizarLog();
-  showToast('✏️ Etiqueta personalizada impressa');
-}
-
-// ===== UTILS =====
-function formatDate(d) {
-  return d.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit', year:'2-digit'});
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
-}
-
-// ===== INIT =====
-initChefBar();
-initProdutoDropdown();
-renderCampos();
-atualizar();
-</script>
-<!-- ===== MODAL BATCH ===== -->
-<div id="modal-batch" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:9999; align-items:center; justify-content:center;">
-  <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:28px; width:min(520px,94vw); max-height:90vh; overflow-y:auto">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
-      <span style="font-size:16px; font-weight:600; color:var(--text)">Importar Batch CSV</span>
-      <button onclick="fecharModalBatch()" style="background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer">✕</button>
-    </div>
-
-    <!-- Tabs -->
-    <div style="display:flex; gap:8px; margin-bottom:20px">
-      <button id="tab-url" onclick="switchTab('url')" style="flex:1; padding:8px; border-radius:8px; border:1px solid var(--accent); background:var(--accent); color:#1a1a1a; font-size:13px; font-weight:600; cursor:pointer">🔗 URL Google Sheets</button>
-      <button id="tab-file" onclick="switchTab('file')" style="flex:1; padding:8px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:var(--muted); font-size:13px; cursor:pointer">📁 Arquivo CSV</button>
-    </div>
-
-    <!-- Painel URL -->
-    <div id="painel-url">
-      <p style="font-size:12px; color:var(--muted); margin-bottom:12px">Cole a URL de publicação do Google Sheets.<br>Sheets → Arquivo → Publicar na web → CSV → Copiar link</p>
-      <input id="batch-url" type="text" placeholder="https://docs.google.com/spreadsheets/d/.../pub?...output=csv"
-        style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px; margin-bottom:12px">
-      <button onclick="carregarURL()" style="width:100%; padding:10px; background:var(--accent2); border:none; border-radius:8px; color:#fff; font-size:14px; font-weight:600; cursor:pointer">Carregar da URL</button>
-    </div>
-
-    <!-- Painel Arquivo -->
-    <div id="painel-file" style="display:none">
-      <p style="font-size:12px; color:var(--muted); margin-bottom:12px">Selecione o arquivo CSV exportado do Google Sheets ou gerado pelo sistema.</p>
-      <input id="batch-file" type="file" accept=".csv" onchange="carregarArquivo(this)"
-        style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px">
-    </div>
-
-    <!-- Preview -->
-    <div id="batch-preview" style="display:none; margin-top:20px">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
-        <span id="batch-preview-count" style="font-size:13px; color:var(--accent); font-weight:600"></span>
-        <span id="batch-erros" style="font-size:12px; color:var(--warn)"></span>
-      </div>
-      <div id="batch-preview-lista" style="max-height:220px; overflow-y:auto; font-size:12px; color:var(--muted); background:var(--surface2); border-radius:8px; padding:10px"></div>
-      <button onclick="confirmarBatch()" style="width:100%; margin-top:14px; padding:12px; background:var(--accent); border:none; border-radius:8px; color:#1a1a1a; font-size:15px; font-weight:700; cursor:pointer">🖨️ Enviar para fila de impressão</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===== FILA BATCH ===== -->
-<div id="fila-section" style="display:none; grid-column:1/-1; margin-top:8px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px">
-  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px">
-    <div>
-      <span style="font-size:15px; font-weight:600; color:var(--text)">Fila de Impressão Batch</span>
-      <span id="fila-count" style="margin-left:10px; background:var(--accent); color:#1a1a1a; font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px"></span>
-    </div>
-    <div style="display:flex; gap:8px">
-      <button onclick="imprimirBatch()" style="padding:8px 18px; background:var(--accent); border:none; border-radius:8px; color:#1a1a1a; font-size:13px; font-weight:700; cursor:pointer">🖨️ Imprimir Todos</button>
-      <button onclick="limparFila()" style="padding:8px 14px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--muted); font-size:13px; cursor:pointer">✕ Limpar</button>
-    </div>
-  </div>
-  <div id="fila-lista" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:8px; max-height:300px; overflow-y:auto"></div>
-</div>
-
-<!-- ===== MODAL ETIQUETA PERSONALIZADA ===== -->
-<div id="modal-custom" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:9998; align-items:center; justify-content:center;">
-  <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:28px; width:min(560px,94vw); max-height:90vh; overflow-y:auto; display:flex; gap:24px">
-
-    <!-- formulário -->
-    <div style="flex:1; min-width:0">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px">
-        <span style="font-size:16px; font-weight:600; color:var(--text)">✏️ Etiqueta Personalizada</span>
-        <button onclick="fecharCustom()" style="background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer">✕</button>
-      </div>
-
-      <div style="display:flex; flex-direction:column; gap:12px">
-        <div>
-          <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px">Produto / Título *</label>
-          <input id="cu-produto" type="text" placeholder="ex: Caldo de Tucupi, Gel de Maracujá…" style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:14px; font-weight:600">
-        </div>
-        <div>
-          <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px">Subtítulo / Detalhe</label>
-          <input id="cu-detalhe" type="text" placeholder="ex: com limão siciliano, sem sal…" style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px">
-        </div>
-        <div style="display:flex; gap:10px">
-          <div style="flex:1">
-            <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px">Chef</label>
-            <select id="cu-chef" style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px">
-              <option value="RAFA">RAFA</option><option value="FRAN">FRAN</option>
-              <option value="BEAT">BEAT</option><option value="MANO">MANO</option>
-              <option value="OZAN">OZAN</option><option value="CHEF">CHEF</option>
-            </select>
-          </div>
-          <div style="flex:1">
-            <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px">Armazenamento</label>
-            <select id="cu-storage" style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px">
-              <option value="refrig">❄️ Refrigerado</option>
-              <option value="cong">🧊 Congelado</option>
-              <option value="amb">🌡️ Temperatura ambiente</option>
-            </select>
-          </div>
-        </div>
-        <div style="display:flex; gap:10px">
-          <div style="flex:1">
-            <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px">Peso / Qtd</label>
-            <input id="cu-peso" type="text" placeholder="ex: 500g, 1L, 12 und" style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px">
-          </div>
-          <div style="flex:1">
-            <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px">Validade</label>
-            <select id="cu-val-tipo" onchange="toggleValCustom()" style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px; margin-bottom:6px">
-              <option value="dias">Em X dias</option>
-              <option value="data">Data específica</option>
-              <option value="imediato">Uso imediato</option>
-            </select>
-            <div id="cu-val-dias-wrap">
-              <input id="cu-val-dias" type="number" min="1" max="365" value="3" style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px" placeholder="dias">
-            </div>
-            <div id="cu-val-data-wrap" style="display:none">
-              <input id="cu-val-data" type="date" style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px">
-            </div>
-          </div>
-        </div>
-        <div>
-          <label style="font-size:11px; color:var(--muted); display:block; margin-bottom:4px">Observação</label>
-          <input id="cu-obs" type="text" placeholder="ex: não congelar, alérgenos, lote…" style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px">
-        </div>
-        <div style="display:flex; gap:8px; margin-top:4px">
-          <button onclick="atualizarPreviewCustom()" style="flex:1; padding:10px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px; cursor:pointer">👁 Preview</button>
-          <button onclick="imprimirCustom()" style="flex:2; padding:10px; background:var(--accent); border:none; border-radius:8px; color:#1a1a1a; font-size:14px; font-weight:700; cursor:pointer">🖨️ Imprimir</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- preview -->
-    <div style="width:160px; flex-shrink:0">
-      <div style="font-size:10px; color:var(--muted); margin-bottom:8px; font-weight:600">PREVIEW</div>
-      <div id="cu-preview" style="width:142px; height:227px; background:#fff; border:1px solid #ccc; border-radius:4px; padding:8px; font-family:'Segoe UI',sans-serif; position:relative; overflow:hidden; transform-origin:top left; font-size:7pt">
-        <div style="font-size:6pt;color:#888;text-align:center;border-bottom:1px solid #eee;padding-bottom:3px;margin-bottom:4px">⭐ DUE</div>
-        <div id="cu-prev-produto" style="font-size:10pt;font-weight:700;color:#111;margin-bottom:3px;line-height:1.2">Produto</div>
-        <div id="cu-prev-detalhe" style="font-size:6pt;color:#555;margin-bottom:4px"></div>
-        <div id="cu-prev-meta" style="font-size:6pt;color:#888;margin-bottom:4px"></div>
-        <div style="border-top:1px solid #ddd;margin:4px 0"></div>
-        <div id="cu-prev-storage" style="font-size:7pt;font-weight:600;color:#111;margin-bottom:3px">❄️ REFRIG</div>
-        <div id="cu-prev-validade" style="font-size:11pt;font-weight:700;color:#111;text-align:center;border:1px solid #111;padding:3px;margin-bottom:3px">—</div>
-        <div id="cu-prev-obs" style="font-size:5.5pt;color:#888;margin-top:3px"></div>
-      </div>
-      <div style="font-size:9px; color:var(--muted); margin-top:6px; text-align:center">50×80mm · escala 50%</div>
-    </div>
-  </div>
-</div>
-
-<!-- ÁREA IMPRESSÃO BATCH (oculta) -->
-<div id="batch-print-area" style="display:none"></div>
-
-<script>
-// ===== BATCH IMPORT =====
-let batchFila = [];
-let batchPendente = [];
-
-function abrirModalBatch() {
-  document.getElementById('modal-batch').style.display = 'flex';
-  document.getElementById('batch-preview').style.display = 'none';
-}
-function fecharModalBatch() {
-  document.getElementById('modal-batch').style.display = 'none';
-}
-function switchTab(tab) {
-  document.getElementById('painel-url').style.display  = tab === 'url'  ? 'block' : 'none';
-  document.getElementById('painel-file').style.display = tab === 'file' ? 'block' : 'none';
-  document.getElementById('tab-url').style.background  = tab === 'url'  ? 'var(--accent)' : 'var(--surface2)';
-  document.getElementById('tab-url').style.color       = tab === 'url'  ? '#1a1a1a' : 'var(--muted)';
-  document.getElementById('tab-url').style.borderColor = tab === 'url'  ? 'var(--accent)' : 'var(--border)';
-  document.getElementById('tab-file').style.background  = tab === 'file' ? 'var(--accent)' : 'var(--surface2)';
-  document.getElementById('tab-file').style.color       = tab === 'file' ? '#1a1a1a' : 'var(--muted)';
-  document.getElementById('tab-file').style.borderColor = tab === 'file' ? 'var(--accent)' : 'var(--border)';
-}
-
-async function carregarURL() {
-  const url = document.getElementById('batch-url').value.trim();
-  if (!url) { showToast('Cole a URL do Google Sheets'); return; }
+async function carregarCSVURL() {
+  const url = document.getElementById('lote-csv-url').value.trim();
+  if (!url) { showToast('Cole a URL do Sheets', 'warn'); return; }
   showToast('Carregando…');
   try {
-    // Google Sheets publish URL suporta CORS nativo
-    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-    let res = await fetch(proxyUrl);
-    if (!res.ok) throw new Error('Erro ao buscar URL');
-    const text = await res.text();
-    parsearCSV(text);
-  } catch(e) {
-    showToast('Falha ao carregar URL — tente o arquivo CSV');
-    console.error(e);
-  }
+    const proxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+    const res = await fetch(proxy);
+    if (!res.ok) throw new Error('Falha na URL');
+    parsearCSV(await res.text());
+  } catch(e) { showToast('Erro: tente o arquivo CSV', 'error'); }
 }
 
-function carregarArquivo(input) {
-  const file = input.files[0];
-  if (!file) return;
+function carregarCSVArquivo(input) {
+  const file = input.files[0]; if (!file) return;
   const reader = new FileReader();
   reader.onload = e => parsearCSV(e.target.result);
   reader.readAsText(file, 'UTF-8');
@@ -1804,152 +1364,122 @@ function carregarArquivo(input) {
 function parsearCSV(text) {
   const linhas = text.trim().split(/\r?\n/);
   const header = linhas[0].toLowerCase().split(',').map(h => h.trim().replace(/"/g,''));
-  const idxProd    = header.indexOf('produto');
-  const idxChef    = header.indexOf('chef');
-  const idxTipo    = header.indexOf('tipo');
-  const idxPeso    = header.indexOf('peso');
-  const idxStorage = header.indexOf('storage');
-  const idxQty     = header.indexOf('qty');
-
-  if (idxProd === -1) { showToast('CSV sem coluna "produto"'); return; }
-
-  const nomesProdutos = CONFIG.produtos.map(p => p.nome.toLowerCase().trim());
-  const validos = [], erros = [];
-
-  linhas.slice(1).forEach((linha, i) => {
+  const iP=header.indexOf('produto'), iC=header.indexOf('chef'),
+        iT=header.indexOf('tipo'),    iW=header.indexOf('peso'),
+        iS=header.indexOf('storage'), iQ=header.indexOf('qty');
+  if (iP===-1) { showToast('CSV sem coluna "produto"','error'); return; }
+  const nomesLower = CONFIG.produtos.map(p => p.nome.toLowerCase().trim());
+  const validos=[], erros=[];
+  linhas.slice(1).forEach(linha => {
     if (!linha.trim()) return;
     const cols = linha.split(',').map(c => c.trim().replace(/^"|"$/g,''));
-    const nomeProd = cols[idxProd] || '';
-    const idx = nomesProdutos.indexOf(nomeProd.toLowerCase().trim());
-    if (idx === -1) {
-      erros.push(`Linha ${i+2}: "${nomeProd}" não encontrado`);
-      return;
-    }
+    const nome = cols[iP]||'';
+    const idx  = nomesLower.indexOf(nome.toLowerCase().trim());
+    if (idx===-1) { erros.push(nome); return; }
     const prod = CONFIG.produtos[idx];
-    validos.push({
-      produto: prod.nome,
-      cat:     prod.cat,
-      tipo:    cols[idxTipo]    || prod.tipo,
-      peso:    cols[idxPeso]    || '—',
-      storage: cols[idxStorage] || 'refrig',
-      qty:     parseInt(cols[idxQty]) || 1,
-      chef:    cols[idxChef]    || 'CHEF',
-      refrig:  prod.refrig,
-      congel:  prod.congel || null,
-      semCongel: prod.semCongel || false,
-    });
+    validos.push({ produto:prod.nome, chef:cols[iC]||'CHEF', tipo:cols[iT]||prod.tipo, peso:cols[iW]||'—', storage:cols[iS]||'refrig', qty:parseInt(cols[iQ])||1 });
   });
-
-  batchPendente = validos;
-  const preview = document.getElementById('batch-preview');
-  preview.style.display = 'block';
-  document.getElementById('batch-preview-count').textContent = `${validos.length} etiquetas válidas`;
-  document.getElementById('batch-erros').textContent = erros.length ? `${erros.length} erro(s)` : '';
-  const lista = document.getElementById('batch-preview-lista');
-  lista.innerHTML = validos.map(v =>
-    `<div style="padding:3px 0; border-bottom:1px solid var(--border)">${v.chef} · <strong style="color:var(--text)">${v.produto}</strong> · ${v.peso} · ${v.storage}</div>`
-  ).join('') + (erros.length ? '<hr style="border-color:var(--border);margin:6px 0">' + erros.map(e => `<div style="color:var(--warn)">${e}</div>`).join('') : '');
+  if (!validos.length) { showToast('Nenhum produto válido no CSV','error'); return; }
+  S_lote = validos; renderLotePreview();
+  showToast((erros.length ? '✓ '+validos.length+' ok · '+erros.length+' erro(s)' : '✓ '+validos.length+' itens'), erros.length?'warn':'ok');
 }
 
-function confirmarBatch() {
-  if (!batchPendente.length) return;
-  batchFila = [...batchPendente];
-  fecharModalBatch();
-  renderizarFila();
-  showToast(`${batchFila.length} itens na fila de impressão`);
-}
+let S_lote = null;
 
-function renderizarFila() {
-  const sec = document.getElementById('fila-section');
-  sec.style.display = batchFila.length ? 'block' : 'none';
-  document.getElementById('fila-count').textContent = `${batchFila.length} etiquetas`;
-  document.getElementById('fila-lista').innerHTML = batchFila.map((item, i) => {
-    const validade = calcularValidade(item);
-    return `<div style="background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px; font-size:12px">
-      <div style="font-weight:600; color:var(--text); margin-bottom:4px">${item.produto}</div>
-      <div style="color:var(--muted)">${item.chef} · ${item.peso} · ${item.storage === 'refrig' ? '❄️ Refrig' : '🧊 Cong'}</div>
-      <div style="color:var(--accent); margin-top:2px">Vence: ${validade}</div>
-    </div>`;
-  }).join('');
-}
-
-function calcularValidade(item) {
-  const MAX_DIAS = 30;
-  const rawDias = item.storage === 'cong' ? (item.congel || 0) : (item.refrig || 0);
-  const dias = rawDias === 0 ? 0 : Math.min(rawDias, MAX_DIAS);
-  if (dias === 0) return 'Uso imediato';
-  const d = new Date();
-  d.setDate(d.getDate() + dias);
-  return d.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit', year:'2-digit'});
-}
-
-function limparFila() {
-  batchFila = [];
-  renderizarFila();
-  showToast('Fila limpa');
-}
-
-function imprimirBatch() {
-  if (!batchFila.length) { showToast('Fila vazia'); return; }
-  const area = document.getElementById('batch-print-area');
-  area.innerHTML = batchFila.map(item => {
-    const validade = calcularValidade(item);
-    const armazLabel = item.storage === 'cong' ? 'CONG' : 'REFR';
-    const tipoLabel  = item.tipo === 'entrada' ? 'ENTRADA' : item.tipo === 'porcao' ? 'PORÇÃO' : 'PRODUÇÃO';
-    const cat = CONFIG.categorias[item.cat];
-    return `<div class="batch-label">
-      <div class="bl-marca">DUE · ${cat ? cat.emoji + ' ' + cat.nome : item.cat.toUpperCase()}</div>
-      <div class="bl-produto">${item.produto}</div>
-      <div class="bl-detalhe">${tipoLabel} · ${item.peso} · ${armazLabel}</div>
-      <div class="bl-validade">Vence: ${validade}</div>
-      <div class="bl-chef">Chef: ${item.chef}</div>
-    </div>`;
-  }).join('');
-
-  // CSS de impressão batch
-  const style = `
-    <style>
-      @media print {
-        body > *:not(#batch-print-area) { display:none !important; }
-        #batch-print-area { display:block !important; }
+function validarLote() {
+  const txt = document.getElementById('lote-json').value.trim();
+  if (!txt) { showToast('Cole um JSON válido','warn'); return; }
+  try {
+    const parsed = JSON.parse(txt);
+    if (!Array.isArray(parsed)||!parsed.length) throw new Error('Array vazio ou inválido');
+    for (const item of parsed) {
+      if (!item.produto) throw new Error('Campo "produto" obrigatório');
+      if (!item.chef)    throw new Error('Campo "chef" obrigatório');
+      if (!item.tipo)    throw new Error('Campo "tipo" obrigatório');
+      if (item.tipo !== 'personalizada') {
+        const prodIdx = CONFIG.produtos.findIndex(p => p.nome.toLowerCase()===item.produto.toLowerCase());
+        if (prodIdx<0) throw new Error('Produto "'+item.produto+'" não encontrado');
       }
-      #batch-print-area { font-family:'Segoe UI',sans-serif; }
-      .batch-label {
-        width:50mm; min-height:80mm;
-        border:1px dashed #999;
-        padding:6mm 4mm;
-        margin:2mm;
-        display:inline-block;
-        vertical-align:top;
-        page-break-inside:avoid;
-        box-sizing:border-box;
-      }
-      .bl-marca    { font-size:7pt; color:#888; margin-bottom:2mm; }
-      .bl-produto  { font-size:12pt; font-weight:700; margin-bottom:2mm; line-height:1.2; }
-      .bl-detalhe  { font-size:8pt; color:#555; margin-bottom:2mm; }
-      .bl-validade { font-size:10pt; font-weight:700; border:1px solid #333; padding:1mm 2mm; display:inline-block; margin-bottom:2mm; }
-      .bl-chef     { font-size:8pt; color:#888; }
-    </style>`;
-  area.insertAdjacentHTML('afterbegin', style);
-  area.style.display = 'block';
-
-  setTimeout(() => {
-    window.print();
-    setTimeout(() => { area.style.display = 'none'; area.innerHTML = ''; }, 1000);
-  }, 200);
-
-  // Registra no log
-  const hora = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-  batchFila.forEach(item => {
-    state.log.push({
-      hora, tipo: item.tipo, produto: item.produto,
-      peso: item.peso, storage: item.storage,
-      validade: calcularValidade(item), qty: item.qty, chef: item.chef
-    });
-  });
-  renderizarLog();
-  showToast(`🖨️ ${batchFila.length} etiquetas enviadas para impressão`);
+    }
+    S_lote = parsed; renderLotePreview();
+    showToast('✓ '+parsed.length+' itens validados!','ok');
+  } catch(e) { showToast('Erro: '+e.message,'error'); }
 }
+
+function renderLotePreview() {
+  if (!S_lote) return;
+  document.getElementById('lote-count').textContent = S_lote.length;
+  document.getElementById('lote-items').innerHTML = S_lote.map((item,idx) =>
+    '<div style="background:var(--surface2);padding:8px;border-radius:6px;font-size:11px">' +
+    '<div style="font-weight:700;color:var(--accent)">'+(idx+1)+'. '+item.produto+'</div>' +
+    '<div style="color:var(--muted);margin-top:2px">'+item.chef+' · '+(item.tipo||'—')+' · '+(item.qty||1)+'×</div>' +
+    '</div>'
+  ).join('');
+  document.getElementById('lote-preview').style.display='block';
+  document.getElementById('lote-btn-area').style.display='block';
+  document.getElementById('btn-lote-imprimir').textContent='🖨 Imprimir Lote ('+S_lote.length+')';
+}
+
+function importarJSON() {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json';
+  input.onchange = e => {
+    const reader = new FileReader();
+    reader.onload = ev => { document.getElementById('lote-json').value=ev.target.result; validarLote(); };
+    reader.readAsText(e.target.files[0]);
+  };
+  input.click();
+}
+
+async function imprimirLote() {
+  if (!S_lote||!S_lote.length) { showToast('Nenhum lote carregado','warn'); return; }
+  if (S.btStatus!=='connected')  { showToast('Impressora não conectada','error'); return; }
+  const btn = document.getElementById('btn-lote-imprimir');
+  const pb  = document.getElementById('lote-progress');
+  const pbar= document.getElementById('lote-progress-bar');
+  const ptxt= document.getElementById('lote-progress-text');
+  btn.disabled=true; pb.style.display='block';
+  let ok=0, erros=0;
+  for (let i=0; i<S_lote.length; i++) {
+    const item = S_lote[i];
+    ptxt.textContent=(i+1)+' / '+S_lote.length;
+    pbar.style.width=((i+1)/S_lote.length*100)+'%';
+    try {
+      let validadeDias = item.validadeDias;
+      if (validadeDias==null && item.tipo!=='personalizada') {
+        const prodIdx = CONFIG.produtos.findIndex(p=>p.nome.toLowerCase()===item.produto.toLowerCase());
+        if (prodIdx>=0) {
+          const prodObj = CONFIG.produtos[prodIdx];
+          const st = item.storage||'refrig';
+          validadeDias = Math.min(st==='congel'?prodObj.congel:prodObj.refrig, 30);
+        }
+      }
+      const dados = { produto:item.produto, tipo:item.tipo||'porcao', validadeDias, storage:item.storage||'refrig', qty:item.qty||1, chef:item.chef, turno:'A', peso:item.peso||'', pesoBruto:item.pesoBruto||'', pesoLiquido:item.pesoLiquido||'', fornecedor:item.fornecedor||'', obs:item.obs||'' };
+      await enviarTSPL(buildTSPL(dados));
+      ok++;
+      S.log.unshift({ produto:item.produto, tipo:item.tipo, qty:item.qty||1, chef:item.chef, storage:item.storage||'REFR', size:S.labelSize+'mm', hora:new Date().toTimeString().slice(0,5) });
+      if (i<S_lote.length-1) await sleep(200);
+    } catch(err) { erros++; console.error('Lote item '+(i+1), err); }
+  }
+  renderLog(); btn.disabled=false;
+  showToast('✓ Lote: '+ok+' OK'+(erros?' · '+erros+' erros':''), ok===S_lote.length?'ok':'warn');
+}
+
+let _toastTimer = null;
+function showToast(msg, tipo) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (tipo==='error'?' error':tipo==='warn'?' warn':'');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+initChefBar();
+initProdutoSelect();
+renderCampos();
+renderPreview();
+atualizar();
+setInterval(renderPreview, 30000);
 </script>
 </body>
 </html>
