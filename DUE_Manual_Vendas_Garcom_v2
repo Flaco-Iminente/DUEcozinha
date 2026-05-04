@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DUE — Manual do Salão</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+:root{
+  --bg:#F8F6F0; --s1:#FFFFFF; --s2:#F0EDE4; --s3:#E4E0D4; --s4:#C8C4B0;
+  --dark:#111009; --dark2:#2A2820; --dark3:#4A4840;
+  --gold:#C8A030; --goldl:#E8C870; --goldd:#7A5C10;
+  --red:#C84040; --green:#2d6a1f; --blue:#2d5a8e;
+  --warn:#8c4000; --warnbg:#FFF4E0;
+  --radius:6px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--dark);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.6}
+/* HEADER */
+.hd{background:var(--dark);padding:20px 28px 16px;position:sticky;top:0;z-index:99;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.hd-brand{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;letter-spacing:.25em;text-transform:uppercase;color:var(--goldl)}
+.hd-sub{font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:#7A7060;margin-top:2px}
+.tabs{display:flex;gap:3px;flex-wrap:wrap}
+.tab{background:none;border:1px solid transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:#7A7060;padding:6px 14px;border-radius:3px;transition:all .15s}
+.tab:hover{color:var(--goldl);border-color:#4A3A00}
+.tab.active{color:var(--goldl);background:#272720;border-color:#4A3A00}
+/* PANELS */
+.panel{display:none}.panel.active{display:block}
+.content{max-width:960px;margin:0 auto;padding:28px 22px}
+/* SECTION HEADER */
+.sec{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);padding-bottom:8px;border-bottom:1px solid var(--s3);margin:32px 0 16px}
+.sec:first-child{margin-top:0}
+/* ALERTA BOX */
+.alerta{background:var(--warnbg);border:1px solid #E8A030;border-left:4px solid var(--warn);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;font-family:'DM Mono',monospace;font-size:.62rem;line-height:1.7;color:var(--warn)}
+.alerta b{font-weight:600;letter-spacing:.05em}
+.info-box{background:var(--s1);border:1px solid var(--s3);border-left:4px solid var(--goldl);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;font-size:.88rem;line-height:1.65;color:var(--dark3)}
+/* PRATO CARD */
+.prato-card{background:var(--s1);border:1px solid var(--s3);border-radius:var(--radius);margin-bottom:8px;overflow:hidden}
+.prato-hd{display:grid;grid-template-columns:1fr auto;align-items:start;gap:10px;padding:12px 16px;cursor:pointer;user-select:none}
+.prato-hd:hover{background:var(--s2)}
+.prato-meta{font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:3px}
+.prato-nome{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:600;color:var(--dark);line-height:1.2}
+.prato-preco{font-family:'DM Mono',monospace;font-size:.8rem;font-weight:500;color:var(--dark2);text-align:right;white-space:nowrap}
+.prato-arr{font-size:.65rem;color:var(--dark3);margin-top:6px;text-align:right;transition:transform .2s}
+.prato-card.open .prato-arr{transform:rotate(180deg)}
+.prato-body{display:none;border-top:1px solid var(--s3);padding:14px 16px 16px}
+.prato-card.open .prato-body{display:block}
+/* allergen tags inline */
+.al-tags{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0 12px}
+.al-tag{font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:2px;font-weight:500}
+.al-gluten{background:#FEE2E2;color:#991B1B}
+.al-lactose{background:#FEF3C7;color:#92400E}
+.al-crustaceo{background:#FFEDD5;color:#9A3412}
+.al-molusco{background:#EDE9FE;color:#5B21B6}
+.al-peixe{background:#DBEAFE;color:#1E40AF}
+.al-ovo{background:#FEF9C3;color:#713F12}
+.al-castanha{background:#DCFCE7;color:#166534}
+.al-amendoim{background:#FCE7F3;color:#9D174D}
+.al-sf{background:#D1FAE5;color:#065F46}
+.al-veg{background:#D1FAE5;color:#065F46}
+.al-jambu{background:#FEF3C7;color:#92400E;border:1px solid #F59E0B}
+.desc-texto{font-family:'Cormorant Garamond',serif;font-size:1rem;line-height:1.7;color:var(--dark3);font-style:italic;margin-bottom:12px}
+.prato-sec-lbl{font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:5px;margin-top:10px}
+.dica-txt{font-size:.88rem;line-height:1.6;color:var(--dark2)}
+.dica-txt li{margin-left:18px;margin-bottom:3px}
+/* ALLERGEN MATRIX */
+.matrix-wrap{overflow-x:auto;margin-bottom:24px}
+.matrix{border-collapse:collapse;width:100%;font-size:.75rem;min-width:600px}
+.matrix th{font-family:'DM Mono',monospace;font-size:.52rem;letter-spacing:.08em;text-transform:uppercase;padding:6px 8px;background:var(--dark);color:var(--goldl);text-align:center;position:sticky;top:60px}
+.matrix th.dish-col{text-align:left;min-width:160px}
+.matrix td{padding:5px 8px;border-bottom:1px solid var(--s3);vertical-align:middle}
+.matrix td.dish-name{font-family:'Cormorant Garamond',serif;font-size:.9rem;font-weight:600;color:var(--dark)}
+.matrix td.dish-cat{font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);padding-top:0}
+.matrix tr:hover td{background:var(--s2)}
+.dot-yes{display:block;width:16px;height:16px;border-radius:50%;margin:0 auto;background:var(--red)}
+.dot-sf{display:block;width:16px;height:16px;border-radius:50%;margin:0 auto;background:var(--green);opacity:.7}
+.matrix td.center{text-align:center}
+/* FILTER BUTTONS */
+.filter-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;align-items:center}
+.filter-lbl{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dark3)}
+.fbtn{background:var(--s1);border:1px solid var(--s3);border-radius:3px;font-family:'DM Mono',monospace;font-size:.58rem;padding:5px 11px;cursor:pointer;color:var(--dark3);transition:all .15s}
+.fbtn:hover{border-color:var(--gold);color:var(--goldd)}
+.fbtn.active{background:var(--dark);color:var(--goldl);border-color:var(--dark)}
+/* GLOSSÁRIO */
+.glos-search{width:100%;background:var(--s1);border:1px solid var(--s3);border-radius:var(--radius);padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;margin-bottom:16px;transition:border-color .15s}
+.glos-search:focus{border-color:var(--gold)}
+.glos-letter{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--gold);padding:4px 0 4px;border-bottom:1px solid var(--s3);margin:20px 0 8px}
+.glos-item{padding:8px 0;border-bottom:1px solid var(--s2);display:flex;gap:14px;align-items:baseline}
+.glos-item:last-child{border-bottom:none}
+.glos-term{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;color:var(--dark);min-width:160px;flex-shrink:0}
+.glos-def{font-size:.88rem;line-height:1.55;color:var(--dark3)}
+.glos-item.hidden{display:none}
+/* SERVIÇO */
+.script-block{background:var(--s1);border:1px solid var(--s3);border-radius:var(--radius);padding:16px 18px;margin-bottom:10px}
+.script-title{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:600;color:var(--dark);margin-bottom:10px}
+.script-momento{font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
+.script-txt{font-size:.88rem;line-height:1.65;color:var(--dark2)}
+.script-txt p{margin-bottom:8px}
+.script-txt p:last-child{margin-bottom:0}
+.script-fala{background:var(--s2);border-left:3px solid var(--goldl);padding:10px 14px;border-radius:0 3px 3px 0;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.97rem;color:var(--dark);margin:8px 0}
+.do-dont{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.do-col,.dont-col{padding:10px 12px;border-radius:3px}
+.do-col{background:#F0FAF0;border:1px solid #B6E0B6}
+.dont-col{background:#FFF5F5;border:1px solid #F0B6B6}
+.do-lbl,.dont-lbl{font-family:'DM Mono',monospace;font-size:.54rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600;margin-bottom:6px}
+.do-lbl{color:var(--green)}
+.dont-lbl{color:var(--red)}
+.do-col li,.dont-col li{font-size:.82rem;margin-left:16px;margin-bottom:3px;color:var(--dark2)}
+/* PROTOCOLO */
+.proto-step{display:flex;gap:14px;margin-bottom:14px;align-items:flex-start}
+.step-num{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:600;color:var(--goldl);line-height:1;min-width:32px;padding-top:2px}
+.step-body .step-title{font-family:'DM Sans',sans-serif;font-weight:600;font-size:.9rem;color:var(--dark);margin-bottom:3px}
+.step-body .step-txt{font-size:.85rem;line-height:1.55;color:var(--dark3)}
+/* MOBILE */
+@media(max-width:600px){
+  .hd{padding:14px 16px}.content{padding:20px 14px}
+  .do-dont{grid-template-columns:1fr}.prato-nome{font-size:1rem}
+  .tabs{gap:2px}.tab{padding:5px 10px;font-size:.52rem}
+}
+</style>
+</head>
+<body>
+
+<header class="hd">
+  <div>
+    <div class="hd-brand">DUE Restaurante</div>
+    <div class="hd-sub">Manual do Salão · v2.0 · Ozanne Consultoria · 2026</div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('cardapio',this)">Cardápio</button>
+    <button class="tab" onclick="switchTab('alergenicos',this)">Alergênicos</button>
+    <button class="tab" onclick="switchTab('glossario',this)">Glossário</button>
+    <button class="tab" onclick="switchTab('servico',this)">Serviço</button>
+  </div>
+</header>
+
+<!-- ═══════════════════ CARDÁPIO ═══════════════════ -->
+<div id="panel-cardapio" class="panel active">
+<div class="content">
+
+<div class="alerta"><b>⚠ JAMBU:</b> O Frango Tucupi e Jambu contém jambu — erva que causa adormecimento da língua e dos lábios. Avisar o cliente ANTES do pedido, sem exceção.</div>
+
+<div class="sec">Cardápio Completo — Entradas Frias</div>
+
+<div class="prato-card" onclick="toggle(this)">
+  <div class="prato-hd">
+    <div><div class="prato-meta">01 · Entrada Fria</div><div class="prato-nome">Tiradito de Peixe + Leite de Tigre Sergipano</div></div>
+    <div><div class="prato-preco">R$ 68</div><div class="prato-arr">▼</div></div>
+  </div>
+  <div class="prato-body">
+    <div class="al-tags"><span class="al-tag al-peixe">Peixe</span><span class="al-tag al-sf">Sem glúten</span></div>
+    <div class="desc-texto">"Fatias finas de peixe branco, leite de tigre com laranja e tucupi, coentro, pimenta, chips de batata-doce. Cura na mesa, não na cozinha."</div>
+    <div class="prato-sec-lbl">Como apresentar</div>
+    <div class="dica-txt"><ul>
+      <li>Explicar que o peixe <b>chega cru</b> e o leite de tigre é servido separado — a acidez cura levemente o peixe à mesa em minutos.</li>
+      <li>Destacar o tucupi: "levamos o Pará para dentro do leite de tigre peruano."</li>
+      <li>Os chips de batata-doce adicionam crocância — comer logo após a chegada.</li>
+      <li>Para alergia a peixe: nenhuma substituição possível, prato não indicado.</li>
+    </ul></div>
+  </div>
+</div>
+
+<div class="prato-card" onclick="toggle(this)">
+  <div class="prato-hd">
+    <div><div class="prato-meta">02 · Entrada Fria</div><div class="prato-nome">Burrata + Camarão Confitado + Pesto Sergipano</div></div>
+    <div><div class="prato-preco">R$ 105</div><div class="prato-arr">▼</div></div>
+  </div>
+  <div class="prato-body">
+    <div class="al-tags"><span class="al-tag al-lactose">Lactose</span><span class="al-tag al-crustaceo">Crustáceos</span><span class="al-tag al-castanha">Castanhas</span><span class="al-tag al-sf">Sem glúten</span></div>
+    <div class="desc-texto">"Burrata artesanal, camarão confit, pesto sergipano de castanha, tomate confitado. O creme que escorre quando a faca chega."</div>
+    <div class="prato-sec-lbl">Como apresentar</div>
+    <div class="dica-txt"><ul>
+      <li>A burrata é <b>artesanal</b> — o creme interno escorre ao cortar. Sugerir que o cliente a abra na mesa.</li>
+      <li>O pesto é feito com castanha de caju sergipana, não com pinhão — diferencial regional importante.</li>
+      <li>Alergias: contém camarão e castanha. Sem glúten.</li>
+    </ul></div>
+  </div>
+</div>
+
+<div class="prato-card" onclick="toggle(this)">
+  <div class="prato-hd">
+    <div><div class="prato-meta">03 · Entrada Fria</div><div class="prato-nome">Tartar do Sertão + Gema Curada + Sagu Crocante</div></div>
+    <div><div class="prato-preco">R$ 58</div><div class="prato-arr">▼</div></div>
+  </div>
+  <div class="prato-body">
+    <div class="al-tags"><span class="al-tag al-ovo">Ovos</span><span class="al-tag al-sf">Sem glúten</span></div>
+    <div class="desc-texto">"Carne do sol picada à faca, cebola roxa, mostarda, ervas e azeite vermelho, gema curada 12h cremosa e intensa, tapioca suflada."</div>
+    <div class="prato-sec-lbl">Como apresentar</div>
+    <div class="dica-txt"><ul>
+      <li>A gema é <b>curada 12h</b> em sal e açúcar — fica cremosa por dentro, firme por fora. Diferente de gema crua comum.</li>
+      <li>A carne do sol é dessalgada e picada à faca no dia — não processada.</li>
+      <li>Sagu crocante: sugestão de misturar tudo antes de comer para aproveitar as texturas.</li>
+      <li>Conteúdo: ovos. Sem glúten, sem laticínios.</li>
+    </ul></div>
+  </div>
+</div>
+
+<div class="sec">Cardápio Completo — Entradas Quentes</div>
+
+<div class="prato-card" onclick="toggle(this)">
+  <div class="prato-hd">
+    <div><div class="prato-meta">04 · Entrada Quente</div><div class="prato-nome">Croqueta de Polvo DUE + Aioli de Páprica</div></div>
+    <div><div class="prato-preco">R$ 58</div><div class="prato-arr">▼</div></div>
+  </div>
+  <div class="prato-body">
+    <div class="al-tags"><span class="al-tag al-gluten">Glúten</span><span class="al-tag al-lactose">Lactose</span><span class="al-tag al-molusco">Moluscos</span></div>
+    <div class="desc-texto">"Polvo, queijo coalho defumado, empanamento DUE, aioli de páprica. Casca crocante, quentinho e cremoso por dentro."</div>
+    <div class="prato-sec-lbl">Como apresentar</div>
+    <div class="dica-txt"><ul>
+      <li>Croqueta de assinatura da casa — polvo cozido lentamente, recheado com queijo coalho defumado.</li>
+      <li>O empanamento DUE é exclusivo: mix de especiarias e panko. Comer <b>imediatamente</b> para preservar a casca.</li>
+      <li>Conteúdo: glúten, lactose, moluscos (polvo).</li>
+    </ul></div>
+  </div>
+</div>
+
+<div class="prato-card" onclick="toggle(this)">
+  <div class="prato-hd">
+    <div><div class="prato-meta">05 · Entrada Quente</div><div class="prato-nome">Taco Sergipano de Camarão</div></div>
+    <div><div class="prato-preco">R$ 49</div><div class="prato-arr">▼</div></div>
+  </div>
+  <div class="prato-body">
+    <div class="al-tags"><span class="al-tag al-crustaceo">Crustáceos</span><span class="al-tag al-sf">Sem glúten</span></div>
+    <div class="desc-texto">"Tortilha de milho com cúrcuma, camarão no azeite de páprica, picles de maxixe artesanal, cebola, tomate, abacate, ervilhas e coentro."</div>
+    <div class="prato-sec-lbl">Como apresentar</div>
+    <div class="dica-txt"><ul>
+      <li>A tortilha é de milho com cúrcuma — <b>sem glúten</b>.</li>
+      <li>O picles de maxixe é artesanal da casa: leve acidez que equilibra o camarão.</li>
+      <li>Maxixe é um legume sergipano, parente do pepino — muitos clientes não conhecem, vale destacar.</li>
+    </ul></div>
+  </div>
+</div>
+
+<div class="prato-card" onclick="toggle(this)">
+  <div class="prato-hd">
+    <div><div class="prato-meta">06 · Entrada Quente</div><div class="prato-nome">Toast de Costela + Picles de Maxixe</div></div>
+    <div><div class="prato-preco">R$ 52</div><div class="prato-arr">▼</div></div>
+  </div>
+  <div class="prato-body">
+    <div class="al-tags"><span class="al-tag al-gluten">Glúten</span><span class="al-tag al-lactose">Lactose</span></div>
+    <div class="desc-texto">"Pão de batata tostado, costela braseada em fundo escuro, picles de maxixe artesanal e rabanete, queijo coalho fresco maçaricado."</div>
+    <div class="prato-sec-lbl">Como apresentar</div>
+    <div class="dica-txt"><ul>
+      <li>A costela é <b>braseada por horas</b> em fundo escuro — desfia na colher. Prato farto para uma entrada.</li>
+      <li>O queijo coalho é maçaricado na hora: chega com cor e sabor de brasa.</li>
+    </ul></div>
+  </div>
+</div>
+
+<div class="prato-card" onclick="toggle(this)">
+  <div class="prato-hd">
+    <div><div class="prato-meta">07 · Entrada Quente</div><div class="prato-nome">Frutos do Mar Tempurá + Vinagrete de Manga</div></div>
+    <div><div class="prato-preco">R$ 78</div><div class="prato-arr">▼</div></div>
+  </div>
+  <div class="prato-body">
+    <div class="al-tags"><span class="al-tag al-gluten">Glúten</span><span class="al-tag al-crustaceo">Crustáceos</span><span class="al-tag al-molusco">Moluscos</span><span class="al-tag al-peixe">Peixe</span></div>
+    <div class="desc-texto">"Casca leve com nori, polvo, lula, camarão e robalo. Vinagrete de manga tropical, teriyaki de hibisco."</div>
+    <div class="prato-sec-lbl">Como apresentar</div>
+    <div class="dica-txt"><ul>
+      <li>Tempurá mais generoso da casa — quatro proteínas. Ótimo para dividir.</li>
+      <li>⚠ Contém os 4 principais alergênicos marinhos: peixe, camarão, polvo e lula. Confirmar com o cliente.</li>
+      <li>O vinagrete de manga é tropical — o teriyaki de hibisco é floral e ácido. Contraste intencional.</li>
+    </ul></div>
+  </div>
+</div>
+
+<div class="sec">Cardápio Completo — Principais Carnes</div>
+
+<div class="prato-card" onclick="toggle(this)">
+  <div class="prato-hd">
+    <div><div class="prato-meta">08 · Principal · Carne</div><div class="prato-nome">Filé Alto com Crosta de Ervas + Xerém Cremoso</div></div>
+    <div><div class="prato-preco">R$ 125</div><div class="prato-arr">▼</div></div>
+  </div>
+  <div class="prato-body">
+    <div class="al-tags"><span class="al-tag al-gluten">Glúten</span><span class="al-tag al-lactose">Lactose</span><span class="al-tag al-castanha">Castanhas</span></div>
+    <div class="desc-texto">"Rosé ao centro, crosta de castanha, ervas e panko. Xerém cremoso de milho verde e leite com toque de trufa."</div>
+    <div class="prato-sec-lbl">Como apresentar</div>
+    <div class="dica-txt"><ul>
+      <li>Ponto padrão: <b>rosé</b> (malpassado). Se o cliente pedir bem passado, informar à cozinha e avisar que o xerém pode ressecar.</li>
+      <li>O xerém é milho nordestino quebrado, cozido cremoso — explicar como "nossa polenta sergipana".</li>
+      <li>Crosta com castanha de caju: confirmar alergia a castanhas antes de servir.</li>
+    </ul></div>
+  </div>
+</div>
+
+<div class="prato-card" onclick="toggle(this)">
+  <div class="prato-hd">
+    <div><div class="prato-meta">09 · Principal · Carne</div><div class="prato-nome">Coxa de Pato Confitada + Purê de Mandioquinha</div></div>
+    <div><div class="prato-preco">R$ 139</div><div class="prato-arr">▼</div></div>
+  </div>
+  <div class="prato-body">
+    <div class="al-tags"><span class="al-tag al-lactose">Lactose</span><span class="al-tag al-castanha">Castanhas</span><span class="al-tag al-sf">Sem glúten</span></div>
+    <div class="desc-texto">"Pele que range, interior que cede. Mousseline de mandioquinha com cenoura, farofa de castanha, tangerina confit."</div>
+    <div class="prato-sec-lbl">Como apresentar</div>
+    <div class="dica-txt"><ul>
+      <li>O confit é preparado <b>dois dias antes</b> — carne de textura única, quase desfiando.</li>
+      <li>A pele chega crocante — servir imediatamente após a chegada à mesa.</li>
+      <li>Farofa de castanha: confirmar alergia. Sem glúten.</li>
+    </ul></div>
+  </div>
+</div>
+
+<div class="prato-card" onclick="toggle(this)">
+  <div class="prato-hd">
+    <div><div class="prato-meta">10 · Principal · Carne</div><div class="prato-nome">Carré de Cordeiro + Pappardelle Trufado</div></div>
+    <div><div class="prato-preco">R$ 155</div><div class="prato-arr">▼</div></div>
+  </div>
+  <div class="prato-body">
+    <div class="al-tags"><span class="al-tag al-gluten">Glúten</span><span class="al-tag al-ovo">Ovos</span><span class="al-tag al-lactose">Lactose</span></div>
+    <div class="desc-texto">"Sabor de cordeiro sem disfarce, pappardelle laminado esta manhã, manteiga trufada, gremolata, parmesão."</div>
+    <div class="prato-sec-lbl">Como apresentar</div>
+    <div class="dica-txt"><ul>
+      <li>A pappardelle é feita <b>nesta manhã</b> — massa fresca, não seca. Textura completamente diferente.</li>
+      <li>Gremolata: condimento fresco de salsinha, limão e alho — clareza e frescor no final do prato.</li>
+      <li>Prato de maior ticket do cardápio. Sugerir com segurança para quem aprecia cordeiro.</li>
+    </ul></div>
+  </div>
+</div>
+
+<div class="prato-card" onclick="toggle(this)">
+  <div class="prato-hd">
+    <div><div class="prato-meta">11 · Principal · Carne</div><div class="prato-nome">Flat Iron + Fonduta de Parmesão + Rigatoni</div></div>
+    <div><div class="prato-preco">R$ 125</div><div class="prato-arr">▼</div></div>
+  </div>
+  <div class="prato-body">
+    <div class="al-tags"><span class="al-tag al-gluten">Glúten</span><span class="al-tag al-lactose">Lactose</span></div>
+    <div class="desc-texto">"Corte marcado na chapa, crosta escura, fonduta de parmesão sobre rigatoni no molho de tomate artesanal da casa."</div>
+    <div class="prato-sec-lbl">Como apresentar</div>
+    <div class="dica-txt"><ul>
+      <li>Flat Iron: corte da paleta bovina, marmoreado, saboroso. Menos nobre que o filé, mais personalidade.</li>
+      <li>A fonduta derrete sobre o rigatoni na hora — servir imediatamente.</li>
+    </ul></div>
+  </div>
+</div>
+
+<div class="prato-card" onclick="toggle(this)">
+  <div class="prato-hd">
+    <div><div class="prato-meta">12 · Principal · Carne</div><div class="prato-nome">Filé do Sertão + Rubacão Sergipano</div></div>
+    <div><div class="prato-preco">R$ 119</div><div class="prato-arr">▼</div></div>
+  </div>
+  <div class="prato-body">
+    <div class="al-tags"><span class="al-tag al-lactose">Lactose</span><span class="al-tag al-sf">Sem glúten</span></div>
+    <div class="desc-texto">"Filé alto, manteiga de garrafa, demi-glace da casa, risoto de baião de dois, queijo coalho maçaricado, couve crocante."</div>
+    <div class="prato-sec-lbl">Como apresentar</div>
+    <div class="dica-txt"><ul>
+      <li>O rubacão é o "baião de dois sergipano" — arroz com feijão fradinho, manteiga de garrafa.</li>
+      <li>Manteiga de garrafa: manteiga clarificada nordestina, aroma característico da região.</li>
+      <li>Sem glúten — boa opção para intolerantes.</li>
+    </ul></div>
+  </div>
+</div>
+
+<div class="sec">Cardápio Completo — Principais Peixes</div>
+
+<div class="prato-card" onclick="toggle(this)">
+  <div class="prato-hd">
+    <div><div class="prato-meta">13 · Principal · Peixe</div><div class="prato-nome">Robalo com Pele Crocante + Mousseline de Banana</div></div>
+    <div><div class="prato-preco">R$ 118</div><div class="prato-arr">▼</div></div>
+  </div>
+  <div class="prato-body">
+    <div class="al-tags"><span class="al-tag al-peixe">Peixe</span><span class="al-tag al-lactose">Lactose</span><span class="al-tag al-sf">Sem glúten</span></div>
+    <div class="desc-texto">"Pele selada e crocante, robalo macio, mousseline de banana-da-terra, picles de maxixe artesanal, cebola roxa grelhada, tomate cereja."</div>
+    <div class="prato-sec-lbl">Como apresentar</div>
+    <div class="dica-txt"><ul>
+      <li>A pele crocante é técnica crítica — servir <b>imediatamente</b>. Perder a crocância muda o prato.</li>
+      <li>Banana-da-terra: mais amadurecida, menos doce que a nanica. A mousseline é aérea, não pesada.</li>
+      <li>Prato emblema da cozinha do mar com o Nordeste.</li>
+    </ul></div>
+  </div>
+</div>
+
+<div class="prato-card" onclick="toggle(this)">
+  <div class="prato-hd">
+    <div><div class="prato-meta">14 · Principal · Peixe ★ Assinatura do Chef</div><div class="prato-nome">Arroz de Polvo DUE</div></div>
+    <div><div class="prato-preco">R$ 145</div><div class="prato-arr">▼</div></div>
+  </div>
+  <div class="prato-body">
+    <div class="al-tags"><span class="al-tag al-molusco">Moluscos</span><span class="al-tag al-crustaceo">Crustáceos</span><span class="al-tag al-lactose">Lactose</span></div>
+    <div class="desc-texto">"Caldo de peixe e bisque de crustáceos, polvo absolutamente macio, arroz arbóreo, rabanete, tomate confit, cebola grelhada."</div>
+    <div class="prato-sec-lbl">Como apresentar</div>
+    <div class="dica-txt"><ul>
+      <li>⭐ <b>Prato assinatura do Chef.</b> Apresentar com orgulho — é a identidade do DUE.</li>
+      <li>O bisque de crustáceos é produzido internamente: cascas de camarão tostadas, aromáticas, reduzidas. Profundidade única.</li>
+      <li>O polvo é cozido lentamente D-1 para garantir maciez perfeita.</li>
+      <li>Conteúdo: polvo (molusco), bisque de camarão (crustáceo). Confirmar.</li>
+    </ul></div>
+  </div>
+</div>
+
+<div class="sec">Cardápio Completo — Principais Massas Artesanais</div>
+
+<div class="prato-card" onclick="toggle(this)">
+  <div class="prato-hd">
+    <div><div class="prato-meta">15 · Principal · Massa</div><div class="prato-nome">Pappardelle DUE + Frutos do Mar + Bisque</div></div>
+    <div><div class="prato-preco">R$ 115</div><div class="prato-arr">▼</div></div>
+  </div>
+  <div class="prato-body">
+    <div class="al-tags"><span class="al-tag al-gluten">Glúten</span><span class="al-tag al-ovo">Ovos</span><span class="al-tag al-crustaceo">Crustáceos</span><span class="al-tag al-molusco">Moluscos</span></div>
+    <div class="desc-texto">"Massa laminada hoje, fundo de crustáceos, camarão, lula e mexilhão grelhados no seu tempo, parmesão, tomate cereja, azeite trufado."</div>
+    <div class="prato-sec-lbl">Como apresentar</div>
+    <div class="dica-txt"><ul>
+      <li>A pappardelle é feita <b>neste dia</b>, não seca. Absorve o bisque de outra forma.</li>
+      <li>Conteúdo: camarão + lula + mexilhão — confirmar alergias a crustáceos e moluscos.</li>
+      <li>O azeite trufado finaliza — perfume sutil, não dominante.</li>
+    </ul></div>
+  </div>
+</div>
+
+<div class="prato-card" onclick="toggle(this)">
+  <div class="prato-hd">
+    <div><div class="prato-meta">16 · Principal · Massa</div><div class="prato-nome">Rigatoni com Ragù de Costela + Parmesão</div></div>
+    <div><div class="prato-preco">R$ 89</div><div class="prato-arr">▼</div></div>
+  </div>
+  <div class="prato-body">
+    <div class="al-tags"><span class="al-tag al-gluten">Glúten</span><span class="al-tag al-lactose">Lactose</span></div>
+    <div class="desc-texto">"Costela selada e braseada em fundo escuro, desfiada, molho de tomate da casa, rigatoni al dente."</div>
+    <div class="prato-sec-lbl">Como apresentar</div>
+    <div class="dica-txt"><ul>
+      <li>Entrada de ticket entre as massas — ótimo para quem quer algo reconfortante.</li>
+      <li>O ragù é feito com fundo escuro: profundidade de sabor muito além de um molho simples.</li>
+    </ul></div>
+  </div>
+</div>
+
+<div class="sec">Cardápio Completo — Para os Pequenos</div>
+
+<div class="prato-card" onclick="toggle(this)">
+  <div class="prato-hd">
+    <div><div class="prato-meta">Para os Pequenos</div><div class="prato-nome">Rigatoni na Manteiga · Frango Grelhado · Paillard de Filé</div></div>
+    <div><div class="prato-preco">R$ 38–48</div><div class="prato-arr">▼</div></div>
+  </div>
+  <div class="prato-body">
+    <div class="al-tags"><span class="al-tag al-gluten">Glúten (Rigatoni/Paillard)</span><span class="al-tag al-lactose">Lactose (Rigatoni/Paillard)</span><span class="al-tag al-sf">Frango: Sem glúten</span></div>
+    <div class="dica-txt"><ul>
+      <li><b>Rigatoni na Manteiga R$38</b> — massa, manteiga de garrafa, parmesão. Conteúdo: glúten e lactose.</li>
+      <li><b>Frango Grelhado R$38</b> — peito grelhado, arroz branco, couve crocante, vinagrete. <b>Sem glúten.</b></li>
+      <li><b>Paillard de Filé R$48</b> — filé fino, rigatoni na manteiga. Pode trocar por molho de tomate. Conteúdo: glúten e lactose.</li>
+    </ul></div>
+  </div>
+</div>
+
+<div class="sec">Cardápio Completo — Sobremesas</div>
+
+<div class="prato-card" onclick="toggle(this)">
+  <div class="prato-hd">
+    <div><div class="prato-meta">Sobremesa</div><div class="prato-nome">Pannacota de Baunilha + Goiaba Verde + Suspiro</div></div>
+    <div><div class="prato-preco">R$ 42</div><div class="prato-arr">▼</div></div>
+  </div>
+  <div class="prato-body">
+    <div class="al-tags"><span class="al-tag al-lactose">Lactose</span></div>
+    <div class="desc-texto">"Baunilha real, goiaba verde confitada, esferas de framboesa, suspiro e flores. Treme. Leve que termina no ponto certo."</div>
+    <div class="dica-txt"><ul><li>A pannacota usa baunilha de fava real — diferença perceptível. Leve e aromática.</li><li>Goiaba verde confitada: sabor suave, menos doce que a goiaba madura.</li></ul></div>
+  </div>
+</div>
+
+<div class="prato-card" onclick="toggle(this)">
+  <div class="prato-hd">
+    <div><div class="prato-meta">Sobremesa</div><div class="prato-nome">Ganache DUE 70% + Laranja Confit + Suspiro</div></div>
+    <div><div class="prato-preco">R$ 45</div><div class="prato-arr">▼</div></div>
+  </div>
+  <div class="prato-body">
+    <div class="al-tags"><span class="al-tag al-lactose">Lactose</span></div>
+    <div class="desc-texto">"Chocolate meio amargo, laranja confit, flor de sal, suspiro, tuile de açúcar crocante. Amargo que vira desejo."</div>
+    <div class="dica-txt"><ul><li>Chocolate belga 70% — sem doçura excessiva. Para quem aprecia chocolate de verdade.</li><li>A flor de sal finaliza — contraste que amplifica o doce.</li></ul></div>
+  </div>
+</div>
+
+<div class="prato-card" onclick="toggle(this)">
+  <div class="prato-hd">
+    <div><div class="prato-meta">Sobremesa</div><div class="prato-nome">Torta Basca Artesanal + Calda de Frutas Vermelhas</div></div>
+    <div><div class="prato-preco">R$ 52</div><div class="prato-arr">▼</div></div>
+  </div>
+  <div class="prato-body">
+    <div class="al-tags"><span class="al-tag al-gluten">Glúten</span><span class="al-tag al-lactose">Lactose</span><span class="al-tag al-ovo">Ovos</span><span class="al-tag al-castanha">Castanhas</span></div>
+    <div class="desc-texto">"Creme delicado, levemente queimado por cima, calda de frutas vermelhas vibrantes, avelã tostada. Sem base. Só o creme."</div>
+    <div class="dica-txt"><ul><li>A Basque cheesecake não tem base de biscoito — é puro creme assado. Textura cremosa ao centro.</li><li>Avelã: confirmar alergia a castanhas/nozes.</li></ul></div>
+  </div>
+</div>
+
+<div class="sec">Menu Executivo — Almoço · R$59 por prato</div>
+
+<div class="info-box">O executivo é um prato único completo, já incluído bebida não-alcoólica em algumas condições. Verificar com a gerência a política atual.</div>
+
+<div class="prato-card" onclick="toggle(this)">
+  <div class="prato-hd">
+    <div><div class="prato-meta">Executivo</div><div class="prato-nome">Salada Morna de Camarão</div></div>
+    <div><div class="prato-preco">R$ 59</div><div class="prato-arr">▼</div></div>
+  </div>
+  <div class="prato-body">
+    <div class="al-tags"><span class="al-tag al-crustaceo">Crustáceos</span><span class="al-tag al-amendoim">Amendoim</span><span class="al-tag al-sf">Sem glúten</span></div>
+    <div class="desc-texto">"Alface crespa, cebola roxa, tomate, pesto de amendoim, camarão, tapioca suflada, picles de maxixe artesanal."</div>
+    <div class="dica-txt"><ul><li>⚠ Contém <b>amendoim</b> no pesto — único prato do cardápio com amendoim. Confirmar sempre.</li></ul></div>
+  </div>
+</div>
+
+<div class="prato-card" onclick="toggle(this)">
+  <div class="prato-hd">
+    <div><div class="prato-meta">Executivo</div><div class="prato-nome">Frango Tucupi e Jambu ⚠</div></div>
+    <div><div class="prato-preco">R$ 59</div><div class="prato-arr">▼</div></div>
+  </div>
+  <div class="prato-body">
+    <div class="al-tags"><span class="al-tag al-jambu">⚠ Jambu — Avisar o cliente</span><span class="al-tag al-sf">Sem glúten</span></div>
+    <div class="desc-texto">"Coxa de frango assada e marinada no tucupi, jambu fresco, azeite de finalização, arroz branco e farofa de cebola roxa."</div>
+    <div class="dica-txt"><ul><li><b>OBRIGATÓRIO AVISAR:</b> "Este prato contém jambu, uma erva amazônica que causa leve adormecimento da língua e dos lábios — é completamente normal e passa em minutos."</li><li>O tucupi é o líquido da mandioca fermentado: intenso, amarelo, sabor único do Norte.</li></ul></div>
+  </div>
+</div>
+
+<div class="prato-card" onclick="toggle(this)">
+  <div class="prato-hd">
+    <div><div class="prato-meta">Executivo</div><div class="prato-nome">Arroz do Sertão Verde — Vegano</div></div>
+    <div><div class="prato-preco">R$ 59</div><div class="prato-arr">▼</div></div>
+  </div>
+  <div class="prato-body">
+    <div class="al-tags"><span class="al-tag al-veg">Vegano</span><span class="al-tag al-sf">Sem glúten</span></div>
+    <div class="dica-txt"><ul><li>Único prato <b>vegano</b> do cardápio. Sem nenhum ingrediente animal.</li><li>Feijão verde + arroz arbóreo + creme de abacate + picles de maxixe.</li></ul></div>
+  </div>
+</div>
+
+</div></div>
+
+<!-- ═══════════════════ ALERGÊNICOS ═══════════════════ -->
+<div id="panel-alergenicos" class="panel">
+<div class="content">
+
+<div class="alerta"><b>Protocolo de alergia:</b> Ao identificar restrição alimentar, comunicar imediatamente à cozinha via caixa. Nunca garantir ausência de traços por contaminação cruzada. Oferecer o cardápio com o chef ou responsável presente para casos graves.</div>
+
+<div class="sec">Filtrar por Alergênico</div>
+<div class="filter-row">
+  <span class="filter-lbl">Mostrar pratos COM:</span>
+  <button class="fbtn" onclick="filterAl('gluten',this)">Glúten</button>
+  <button class="fbtn" onclick="filterAl('lactose',this)">Lactose</button>
+  <button class="fbtn" onclick="filterAl('crustaceo',this)">Crustáceos</button>
+  <button class="fbtn" onclick="filterAl('molusco',this)">Moluscos</button>
+  <button class="fbtn" onclick="filterAl('peixe',this)">Peixe</button>
+  <button class="fbtn" onclick="filterAl('ovo',this)">Ovos</button>
+  <button class="fbtn" onclick="filterAl('castanha',this)">Castanhas</button>
+  <button class="fbtn" onclick="filterAl('amendoim',this)">Amendoim</button>
+  <button class="fbtn" onclick="filterAl('sf',this)">Sem glúten ✓</button>
+  <button class="fbtn active" onclick="filterAl('all',this)">Ver todos</button>
+</div>
+
+<div class="matrix-wrap">
+<table class="matrix" id="alMatrix">
+<thead><tr>
+  <th class="dish-col">Prato</th>
+  <th>Gli</th><th>Lac</th><th>Cru</th><th>Mol</th><th>Pei</th><th>Ovo</th><th>Cas</th><th>Ame</th><th>SF</th>
+</tr></thead>
+<tbody id="matrixBody"></tbody>
+</table>
+</div>
+
+</div></div>
+
+<!-- ═══════════════════ GLOSSÁRIO ═══════════════════ -->
+<div id="panel-glossario" class="panel">
+<div class="content">
+<div class="sec">Glossário Técnico — Termos e Técnicas DUE</div>
+<input class="glos-search" type="text" placeholder="Buscar termo..." oninput="searchGlos(this.value)" id="glosInput">
+<div id="glosContainer"></div>
+</div></div>
+
+<!-- ═══════════════════ SERVIÇO ═══════════════════ -->
+<div id="panel-servico" class="panel">
+<div class="content">
+
+<div class="sec">Abertura e Apresentação do Cardápio</div>
+
+<div class="script-block">
+  <div class="script-momento">Chegada à mesa</div>
+  <div class="script-title">Receber, apresentar, criar presença</div>
+  <div class="script-txt">
+    <p>Chegar à mesa em no máximo 2 minutos após o cliente sentar. Cumprimentar pelo nome se já for conhecido. Entregar o cardápio aberto — não fechado em cima da mesa.</p>
+    <div class="script-fala">"Bem-vindos ao DUE. Sou [nome] e estou aqui com vocês hoje. Nosso cardápio tem o completo — para quem quer explorar — e o executivo do almoço, que é um prato completo a R$59. Há alguma restrição alimentar que eu deva saber antes de apresentar?"</div>
+    <p>Aguardar resposta antes de continuar. Anotar restrições antes de sugerir qualquer prato.</p>
+  </div>
+</div>
+
+<div class="script-block">
+  <div class="script-momento">Apresentação dos destaques</div>
+  <div class="script-title">Os pratos que precisam de apresentação oral</div>
+  <div class="script-txt">
+    <p>Alguns pratos <strong>precisam ser explicados</strong> — a descrição no cardápio não é suficiente:</p>
+    <ul style="margin-left:18px;font-size:.88rem;color:var(--dark2);line-height:1.8">
+      <li><b>Tiradito:</b> o peixe chega cru — a cura acontece na mesa.</li>
+      <li><b>Frango Tucupi e Jambu:</b> avisar o adormecimento do jambu antes do pedido.</li>
+      <li><b>Arroz de Polvo DUE:</b> apresentar como assinatura do chef.</li>
+      <li><b>Carré de Cordeiro:</b> ponto rosé padrão — perguntar ao cliente.</li>
+      <li><b>Pato Confitado:</b> técnica de 2 dias — vale contextualizar.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="sec">Venda Sugestiva</div>
+
+<div class="script-block">
+  <div class="script-momento">Técnica — Ler a mesa</div>
+  <div class="script-title">Perguntas que abrem a conversa certa</div>
+  <div class="script-txt">
+    <div class="script-fala">"Vocês preferem algo mais leve para começar ou querem uma entrada mais generosa para dividir?"</div>
+    <div class="script-fala">"Estão com disposição para peixe ou estão mais inclinados para as carnes hoje?"</div>
+    <div class="script-fala">"Costumam terminar com sobremesa? Tenho duas que valem muito — posso guardar espaço mentalmente enquanto escolhem os principais."</div>
+  </div>
+</div>
+
+<div class="script-block">
+  <div class="script-momento">Combinações recomendadas</div>
+  <div class="script-title">Sequências que funcionam bem juntas</div>
+  <div class="script-txt"><ul style="margin-left:18px;font-size:.88rem;color:var(--dark2);line-height:1.9">
+    <li><b>Tiradito → Robalo com Pele Crocante:</b> coerência de mar, texturas contrastantes.</li>
+    <li><b>Tartar do Sertão → Filé do Sertão:</b> narrativa nordestina do começo ao fim.</li>
+    <li><b>Croqueta de Polvo → Arroz de Polvo DUE:</b> o ingrediente em duas interpretações.</li>
+    <li><b>Toast de Costela → Rigatoni de Costela:</b> para quem quer explorar a costela.</li>
+    <li><b>Qualquer principal → Torta Basca:</b> o fim de refeição mais solicitado da casa.</li>
+  </ul></div>
+</div>
+
+<div class="script-block">
+  <div class="script-momento">Executivo — Almoço</div>
+  <div class="script-title">Como apresentar o menu executivo</div>
+  <div class="script-txt">
+    <div class="script-fala">"No almoço temos o menu executivo: um prato completo por R$59. São seis opções — do vegano ao camarão, do frango ao sertanejo. É uma refeição completa, não uma versão reduzida."</div>
+    <p>Se o cliente pedir sugestão no executivo: perguntar preferência de proteína (peixe, frango, carne, vegetariano) e indicar a opção correspondente.</p>
+  </div>
+</div>
+
+<div class="sec">Protocolo de Serviço</div>
+
+<div class="proto-step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Água e bebidas — primeiros 3 minutos</div><div class="step-txt">Oferecer água com ou sem gás. Apresentar opções de bebidas sem pressão. Não deixar a mesa sem líquido enquanto escolhem o cardápio.</div></div></div>
+<div class="proto-step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Anotar pedido — confirmar alergias</div><div class="step-txt">Repetir o pedido completo antes de ir à cozinha. Confirmar ponto das carnes. Comunicar o tempo estimado se a cozinha informar algo fora do padrão.</div></div></div>
+<div class="proto-step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Entradas — servir e apresentar</div><div class="step-txt">Apresentar o prato pelo nome ao servir. Para Tiradito: explicar o momento de jogar o leite de tigre. Para Croqueta: sugerir comer imediatamente.</div></div></div>
+<div class="proto-step"><div class="step-num">4</div><div class="step-body"><div class="step-title">Passagem de entrada para principal</div><div class="step-txt">Verificar se entradas foram terminadas antes de liberar os principais. Retirar louças antes da chegada dos pratos.</div></div></div>
+<div class="proto-step"><div class="step-num">5</div><div class="step-body"><div class="step-title">Principais — servir com contexto</div><div class="step-txt">Apresentar os pratos ao servir. Para pele crocante (Robalo): não cobrir e servir imediatamente. Para Carré/Filé: confirmar se o ponto está correto antes de sair da mesa.</div></div></div>
+<div class="proto-step"><div class="step-num">6</div><div class="step-body"><div class="step-title">Sobremesa — oferecer ativamente</div><div class="step-txt">Não perguntar "vai querer sobremesa?". Apresentar as opções com descrição curta. A taxa de conversão sobe com apresentação ativa.</div></div></div>
+<div class="proto-step"><div class="step-num">7</div><div class="step-body"><div class="step-title">Fechamento</div><div class="step-txt">Trazer a conta apenas quando solicitada. Após o pagamento, agradecer pelo nome se souber. A última impressão vale tanto quanto a primeira.</div></div></div>
+
+<div class="sec">Do e Não Faça</div>
+<div class="script-block">
+  <div class="do-dont">
+    <div class="do-col"><div class="do-lbl">✓ Faça</div><ul>
+      <li>Avisar sobre o jambu antes do pedido</li>
+      <li>Perguntar restrições ao sentar</li>
+      <li>Apresentar o Arroz de Polvo como assinatura</li>
+      <li>Repetir o pedido antes de ir</li>
+      <li>Servir imediatamente pratos com crocância</li>
+      <li>Oferecer sobremesa ativamente</li>
+      <li>Conhecer o ponto padrão de cada carne</li>
+    </ul></div>
+    <div class="dont-col"><div class="dont-lbl">✗ Não Faça</div><ul>
+      <li>Garantir "sem traços" para alérgicos graves</li>
+      <li>Deixar mesa sem água durante escolha</li>
+      <li>Cobrir prato com pele crocante</li>
+      <li>Servir principal com louça de entrada na mesa</li>
+      <li>Trazer conta sem ser solicitado</li>
+      <li>Dizer "não sei" sem buscar a resposta</li>
+      <li>Ignorar o ponto da carne ao servir</li>
+    </ul></div>
+  </div>
+</div>
+
+</div></div>
+
+<script>
+/* ═══ TABS ═══ */
+function switchTab(id,btn){
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active')});
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
+  document.getElementById('panel-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* ═══ PRATO ACCORDION ═══ */
+function toggle(card){card.classList.toggle('open')}
+
+/* ═══ ALLERGEN MATRIX DATA ═══ */
+// G=Glúten L=Lactose C=Crustáceo M=Molusco P=Peixe O=Ovo K=Castanha A=Amendoim SF=SemGlúten
+var MATRIX_DATA = [
+  {cat:'Entrada Fria',nome:'Tiradito de Peixe',pr:'68',G:0,L:0,C:0,M:0,P:1,O:0,K:0,A:0,SF:1},
+  {cat:'Entrada Fria',nome:'Burrata + Camarão',pr:'105',G:0,L:1,C:1,M:0,P:0,O:0,K:1,A:0,SF:1},
+  {cat:'Entrada Fria',nome:'Tartar do Sertão',pr:'58',G:0,L:0,C:0,M:0,P:0,O:1,K:0,A:0,SF:1},
+  {cat:'Entrada Quente',nome:'Croqueta de Polvo DUE',pr:'58',G:1,L:1,C:0,M:1,P:0,O:0,K:0,A:0,SF:0},
+  {cat:'Entrada Quente',nome:'Taco Sergipano de Camarão',pr:'49',G:0,L:0,C:1,M:0,P:0,O:0,K:0,A:0,SF:1},
+  {cat:'Entrada Quente',nome:'Toast de Costela',pr:'52',G:1,L:1,C:0,M:0,P:0,O:0,K:0,A:0,SF:0},
+  {cat:'Entrada Quente',nome:'Frutos do Mar Tempurá',pr:'78',G:1,L:0,C:1,M:1,P:1,O:0,K:0,A:0,SF:0},
+  {cat:'Principal Carne',nome:'Filé Alto com Crosta',pr:'125',G:1,L:1,C:0,M:0,P:0,O:0,K:1,A:0,SF:0},
+  {cat:'Principal Carne',nome:'Coxa de Pato Confitada',pr:'139',G:0,L:1,C:0,M:0,P:0,O:0,K:1,A:0,SF:1},
+  {cat:'Principal Carne',nome:'Carré de Cordeiro',pr:'155',G:1,L:1,C:0,M:0,P:0,O:1,K:0,A:0,SF:0},
+  {cat:'Principal Carne',nome:'Flat Iron + Fonduta',pr:'125',G:1,L:1,C:0,M:0,P:0,O:0,K:0,A:0,SF:0},
+  {cat:'Principal Carne',nome:'Filé do Sertão',pr:'119',G:0,L:1,C:0,M:0,P:0,O:0,K:0,A:0,SF:1},
+  {cat:'Principal Peixe',nome:'Robalo com Pele Crocante',pr:'118',G:0,L:1,C:0,M:0,P:1,O:0,K:0,A:0,SF:1},
+  {cat:'Principal Peixe',nome:'Arroz de Polvo DUE ★',pr:'145',G:0,L:1,C:1,M:1,P:0,O:0,K:0,A:0,SF:0},
+  {cat:'Principal Massa',nome:'Pappardelle DUE',pr:'115',G:1,L:0,C:1,M:1,P:0,O:1,K:0,A:0,SF:0},
+  {cat:'Principal Massa',nome:'Rigatoni de Costela',pr:'89',G:1,L:1,C:0,M:0,P:0,O:0,K:0,A:0,SF:0},
+  {cat:'Pequenos',nome:'Rigatoni na Manteiga',pr:'38',G:1,L:1,C:0,M:0,P:0,O:0,K:0,A:0,SF:0},
+  {cat:'Pequenos',nome:'Frango Grelhado',pr:'38',G:0,L:0,C:0,M:0,P:0,O:0,K:0,A:0,SF:1},
+  {cat:'Pequenos',nome:'Paillard de Filé',pr:'48',G:1,L:1,C:0,M:0,P:0,O:0,K:0,A:0,SF:0},
+  {cat:'Sobremesa',nome:'Pannacota de Baunilha',pr:'42',G:0,L:1,C:0,M:0,P:0,O:0,K:0,A:0,SF:0},
+  {cat:'Sobremesa',nome:'Ganache DUE 70%',pr:'45',G:0,L:1,C:0,M:0,P:0,O:0,K:0,A:0,SF:0},
+  {cat:'Sobremesa',nome:'Torta Basca Artesanal',pr:'52',G:1,L:1,C:0,M:0,P:0,O:1,K:1,A:0,SF:0},
+  {cat:'Executivo',nome:'Salada Morna de Camarão',pr:'59',G:0,L:0,C:1,M:0,P:0,O:0,K:0,A:1,SF:1},
+  {cat:'Executivo',nome:'Robalo Território',pr:'59',G:0,L:1,C:0,M:0,P:1,O:0,K:0,A:0,SF:1},
+  {cat:'Executivo',nome:'Frango Tucupi e Jambu',pr:'59',G:0,L:0,C:0,M:0,P:0,O:0,K:0,A:0,SF:1},
+  {cat:'Executivo',nome:'Arroz do Sertão Verde',pr:'59',G:0,L:0,C:0,M:0,P:0,O:0,K:0,A:0,SF:1},
+  {cat:'Executivo',nome:'Rigatoni ao Fundo Escuro',pr:'59',G:1,L:1,C:0,M:0,P:0,O:0,K:0,A:0,SF:0},
+  {cat:'Executivo',nome:'Carne de Sol na Manteiga',pr:'59',G:0,L:1,C:0,M:0,P:0,O:0,K:0,A:0,SF:1},
+  {cat:'DDM (11/05)',nome:'Risoto de Camarão',pr:'110',G:0,L:1,C:1,M:0,P:0,O:0,K:1,A:0,SF:1},
+  {cat:'DDM (11/05)',nome:'Ravioli de Cogumelos',pr:'89',G:1,L:1,C:0,M:0,P:0,O:1,K:0,A:0,SF:0},
+  {cat:'DDM (11/05)',nome:'Mousse de Chocolate Branco',pr:'38',G:0,L:1,C:0,M:0,P:0,O:0,K:1,A:0,SF:1},
+];
+
+var activeFilter = 'all';
+
+function renderMatrix(data){
+  var tbody = document.getElementById('matrixBody');
+  tbody.innerHTML = '';
+  data.forEach(function(d){
+    var tr = document.createElement('tr');
+    tr.dataset.g=d.G; tr.dataset.l=d.L; tr.dataset.c=d.C; tr.dataset.m=d.M;
+    tr.dataset.p=d.P; tr.dataset.o=d.O; tr.dataset.k=d.K; tr.dataset.a=d.A; tr.dataset.sf=d.SF;
+    function dot(v,cls){return v?'<td class="center"><span class="dot-yes"></span></td>':'<td></td>';}
+    function dotSF(v){return v?'<td class="center"><span class="dot-sf"></span></td>':'<td></td>';}
+    tr.innerHTML =
+      '<td><div class="dish-name">'+d.nome+'</div><div class="dish-cat">'+d.cat+' · R$'+d.pr+'</div></td>'+
+      dot(d.G)+dot(d.L)+dot(d.C)+dot(d.M)+dot(d.P)+dot(d.O)+dot(d.K)+dot(d.A)+dotSF(d.SF);
+    tbody.appendChild(tr);
+  });
+}
+
+function filterAl(type,btn){
+  activeFilter = type;
+  document.querySelectorAll('.fbtn').forEach(function(b){b.classList.remove('active')});
+  btn.classList.add('active');
+  var keyMap = {gluten:'g',lactose:'l',crustaceo:'c',molusco:'m',peixe:'p',ovo:'o',castanha:'k',amendoim:'a',sf:'sf'};
+  var rows = document.querySelectorAll('#matrixBody tr');
+  rows.forEach(function(row){
+    if(type==='all'){row.style.display='';return;}
+    var key = keyMap[type];
+    if(!key){row.style.display='';return;}
+    row.style.display = (row.dataset[key]==='1') ? '' : 'none';
+  });
+}
+
+/* ═══ GLOSSÁRIO ═══ */
+var GLOSSARIO = [
+  {t:'Arbóreo',d:'Variedade de arroz de grão curto e redondo, rico em amido. Absorve líquido progressivamente, criando a cremosidade característica do risoto. Nunca lavar antes de usar.'},
+  {t:'Azeite trufado',d:'Azeite aromatizado com trufa, perfume intenso e terroso. Usado em gotas na finalização — excesso domina o prato. Presente no Carré de Cordeiro e Pappardelle DUE.'},
+  {t:'Bisque',d:'Caldo concentrado e rico produzido a partir de cascas, cabeças e carcaças de crustáceos tostados. Base do Arroz de Polvo DUE e do Pappardelle DUE. Produção própria da casa.'},
+  {t:'Brunoise',d:'Corte clássico francês em cubos de 2×2mm — o menor corte padronizado da cozinha. Exige paciência e faca afiada. Usado no Tartar do Sertão.'},
+  {t:'Burrata',d:'Queijo fresco italiano com casca de mozzarella recheada com stracciatella — fios de mozzarella mergulhados em creme de leite. O creme escorre ao cortar. Artesanal no DUE.'},
+  {t:'Carne do sol',d:'Carne bovina salgada e curada ao ar livre no clima semiárido nordestino. Diferente do charque (seca completamente), a carne do sol mantém umidade. Precisa dessalgar antes do preparo.'},
+  {t:'Confit',d:'Técnica de cocção lenta em gordura a baixa temperatura (65–80°C) por várias horas. Resulta em textura macia, úmida, e sabor concentrado. Usado na Coxa de Pato (2 dias de antecedência) e no Camarão Confitado.'},
+  {t:'Crosta',d:'Camada crocante formada por castanhas trituradas, ervas e panko prensada sobre a proteína antes de assar. Cria contraste de textura entre o exterior crocante e o interior macio. Presente no Filé Alto com Crosta.'},
+  {t:'Cura',d:'Processo de transformação e conservação por sal, açúcar ou ácido. A gema curada do Tartar do Sertão passa 12h em mix de sal e açúcar. O Tiradito usa cura ácida (leite de tigre) feita à mesa.'},
+  {t:'Demi-glace',d:'Molho base da cozinha clássica: ossos assados com mirepoix e vinho tinto, reduzidos por horas até consistência densa, quase gelatinosa. Profundidade intensa. Produção própria do DUE — base de vários pratos.'},
+  {t:'Dry rub',d:'Mistura seca de especiarias (sal, pimenta, ervas, especiarias) aplicada sobre proteínas antes do cozimento, criando crosta de sabor durante a selagem. Blend exclusivo do DUE.'},
+  {t:'Empanamento DUE',d:'Técnica exclusiva da casa: proteína passada em farinha temperada, depois ovo, depois mix de panko e especiarias proprietárias. Resulta em casca mais crocante e aromática que o empanamento tradicional.'},
+  {t:'Flor de sal',d:'Cristais de sal coletados manualmente da superfície das salinas — camada mais superficial. Dissolve mais devagar que o sal comum, liberando o sabor aos poucos. Finalizador nobre, nunca usado para cocção.'},
+  {t:'Fonduta',d:'Molho italiano de queijo fundido, cremoso e untuoso. No DUE é feito com parmesão — a versão fonduta di parmigiano. Servida sobre o Flat Iron + Rigatoni, derrete ao contato com a massa quente.'},
+  {t:'Fumet',d:'Caldo claro, delicado, produzido a partir de espinhas e cabeças de peixe, legumes aromáticos e vinho branco. Tempo curto de cocção (20–30min) para não amargar. Base de risotos e molhos de peixe.'},
+  {t:'Garde Manger',d:'Estação de cozinha responsável pelas preparações frias: entradas frias, sobremesas, saladas e itens que não precisam de fogo direto. No DUE: Aux Frios.'},
+  {t:'Ganache',d:'Emulsão de chocolate com creme de leite quente. A proporção define a consistência: mais chocolate = ganache firme (trufas); mais creme = ganache fluida (cobertura). No DUE: chocolate 70% belga.'},
+  {t:'Gema curada',d:'Gema de ovo tratada em uma mistura de sal e açúcar por 12–48h. A osmose retira umidade: a gema fica firme por fora, cremosa ao centro, com sabor concentrado e umami. Preparada D-1.'},
+  {t:'Gremolata',d:'Condimento fresco italiano clássico: salsinha picada + raspas de limão + alho cru. Adiciona frescor e acidez ao final de pratos assados e braseados. Presente no Carré de Cordeiro.'},
+  {t:'Jambu',d:'Erva amazônica (Acmella oleracea) que contém espilantol — composto que estimula receptores de dor e causa leve adormecimento da língua e lábios. Efeito passageiro (5–10 min), completamente normal. AVISAR O CLIENTE SEMPRE.'},
+  {t:'Leite de tigre',d:'Marinada cítrica base do ceviche: suco de limão, coentro, pimenta, caldo de peixe, alho. Tem ação "curante" sobre proteínas cruas pela acidez. No Tiradito DUE, leva tucupi — versão sergipana.'},
+  {t:'Manteiga de garrafa',d:'Manteiga clarificada nordestina, armazenada em garrafa após derretimento e decantação dos sólidos do leite. Ponto de fumaça alto, aroma intenso e característico do Nordeste. Sem lactose após clarificação.'},
+  {t:'Maçaricar',d:'Uso do maçarico culinário para caramelizar, dourar ou criar reação de Maillard em superfícies sem calor indireto. O queijo coalho é maçaricado no Toast de Costela.'},
+  {t:'Mise en place',d:'Expressão francesa: "tudo em seu lugar". Preparo e organização de todos os ingredientes e ferramentas antes de iniciar o cozimento. Princípio fundamental da operação DUE.'},
+  {t:'Mirepoix',d:'Base aromática clássica francesa: cenoura + cebola + salsão em proporção 1:2:1. Ponto de partida de fundos, molhos e braseados.'},
+  {t:'Mousseline',d:'Purê extremamente aerado, montado com manteiga e/ou creme de leite em temperatura controlada. Muito mais leve e sedoso que um purê convencional. Presente no Robalo com Pele Crocante (banana-da-terra) e Pato Confitado (mandioquinha).'},
+  {t:'Pappardelle',d:'Massa fresca achatada e larga (2–3cm). A largura captura mais molho que massas finas. No DUE é laminada no dia — textura e absorção completamente diferentes de pappardelle seca industrializada.'},
+  {t:'Pesto sergipano',d:'Versão regional do pesto clássico italiano (que usa pinhão). No DUE é feito com castanha de caju sergipana, coentro e azeite. Presente na Burrata e no Executivo de Camarão.'},
+  {t:'Picles de maxixe',d:'Conserva artesanal de maxixe em vinagre, sal e especiarias. Maxixe é um legume nordestino, parente do pepino, sabor levemente amargo. O picles aporta acidez e crocância. Produção própria.'},
+  {t:'Ravioli',d:'Massa fresca recheada, formato quadrado ou redondo. No DUE (DDM): recheada com blend de cogumelos e ricotta. A massa é fresca — diferença total de textura comparado ao ravioli seco.'},
+  {t:'Risoto',d:'Técnica italiana: arroz arbóreo cozido progressivamente com adição de caldo quente aos poucos, agitando para liberar o amido. O resultado é cremoso por dentro do grão, que ainda oferece resistência ao dente (al dente).'},
+  {t:'Rosé / Malpassado',d:'Ponto de carne: exterior selado e escuro, interior vermelho-rosado, quente ao centro. Temperatura interna ~52–54°C. Ponto padrão dos filés do DUE. Sempre confirmar com o cliente.'},
+  {t:'Rubacão',d:'Prato nordestino tradicional: arroz cozido junto com feijão fradinho (ou feijão verde), manteiga de garrafa, temperos. O "baião de dois sergipano". Base do Filé do Sertão.'},
+  {t:'Sagu',d:'Fécula de mandioca (tapioca) em grânulos pequenos. Quando frito em óleo quente, expande e fica crocante e translúcido. Usado como elemento de textura no Tartar do Sertão.'},
+  {t:'Stracciatella',d:'Interior cremoso da burrata — fios finos de mozzarella mergulhados em creme de leite fresco. Derrama ao cortar a casca da burrata. É a parte mais valorizada do queijo.'},
+  {t:'Tapioca suflada',d:'Tapioca expandida por calor seco (sem óleo). Fica leve, crocante e levemente tostada. Usada como elemento de crocância e visual em pratos frios.'},
+  {t:'Tartare / Tartar',d:'Preparação de carne ou peixe cru, picado finamente à faca (nunca moído), temperado na hora com condimentos. Exige produto de altíssima qualidade e frescor. No DUE: carne do sol picada à faca.'},
+  {t:'Tempurá',d:'Massa de fritura leve de origem japonesa: farinha de trigo, água gelada e às vezes ovo, misturados com mínima agitação (grânulos de farinha visíveis). A água gelada retarda o desenvolvimento do glúten, resultando em casca ultra-leve.'},
+  {t:'Tiradito',d:'Prato peruano-nikkei: peixe cru fatiado fino (como sashimi), regado com leite de tigre NA MESA — não marinado previamente. A cura acontece à vista do cliente. O DUE adiciona tucupi ao leite de tigre.'},
+  {t:'Toast',d:'Pão tostado na chapa ou forno até dourar e criar crocância superficial mantendo o interior macio. Base de entradas abertas como o Toast de Costela.'},
+  {t:'Tucupi',d:'Líquido amarelo-ouro extraído da mandioca brava, fermentado e cozido para eliminar toxinas. Sabor ácido, intenso e único — ingrediente emblemático da Amazônia. Presente no Frango Tucupi e Jambu do Executivo.'},
+  {t:'Umami',d:'Quinto sabor básico (além de doce, salgado, ácido e amargo). Sensação de profundidade, "corpo" e persistência dada por moléculas como glutamato e inosinato. Presente em ingredientes como parmesão, tomate confitado, demi-glace e bisque.'},
+  {t:'Xerém',d:'Milho branco quebrado grosso, típico do Nordeste do Brasil. Cozido cremoso com leite e manteiga: consistência similar à polenta, sabor mais delicado. No DUE: xerém cremoso com milho verde e toque de trufa.'},
+];
+
+function renderGlossario(){
+  var container = document.getElementById('glosContainer');
+  container.innerHTML = '';
+  var letters = {};
+  GLOSSARIO.forEach(function(g){
+    var l = g.t[0].toUpperCase();
+    if(!letters[l]) letters[l]=[];
+    letters[l].push(g);
+  });
+  Object.keys(letters).sort().forEach(function(l){
+    var lDiv = document.createElement('div');
+    lDiv.innerHTML = '<div class="glos-letter">'+l+'</div>';
+    letters[l].forEach(function(g){
+      var item = document.createElement('div');
+      item.className = 'glos-item';
+      item.dataset.term = (g.t+' '+g.d).toLowerCase();
+      item.innerHTML = '<div class="glos-term">'+g.t+'</div><div class="glos-def">'+g.d+'</div>';
+      lDiv.appendChild(item);
+    });
+    container.appendChild(lDiv);
+  });
+}
+
+function searchGlos(val){
+  var v = val.toLowerCase();
+  document.querySelectorAll('.glos-item').forEach(function(item){
+    item.classList.toggle('hidden', v && !item.dataset.term.includes(v));
+  });
+  document.querySelectorAll('.glos-letter').forEach(function(lh){
+    var next = lh.nextSibling;
+    var anyVisible = false;
+    while(next && !next.classList.contains('glos-letter')){
+      if(next.classList && !next.classList.contains('hidden')) anyVisible = true;
+      next = next.nextSibling;
+    }
+    lh.style.display = anyVisible ? '' : 'none';
+  });
+}
+
+/* ═══ INIT ═══ */
+document.addEventListener('DOMContentLoaded',function(){
+  renderMatrix(MATRIX_DATA);
+  renderGlossario();
+});
+</script>
+</body>
+</html>
