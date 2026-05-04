@@ -90,10 +90,25 @@ body{background:var(--bg);color:var(--cr);font-family:'DM Sans',sans-serif;font-
 .ins-un{font-family:'DM Mono',monospace;font-size:.75rem;color:var(--cr3)}
 .ins-buf{font-family:'DM Mono',monospace;font-size:.78rem;color:var(--cr2);text-align:right;opacity:.7}
 /* BUFFER TOGGLE */
-.buf-row{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.buf-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
 .buf-label{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--cr3)}
 .buf-btn{background:var(--s2);border:1px solid var(--s3);border-radius:2px;color:var(--cr3);font-family:'DM Mono',monospace;font-size:.6rem;padding:4px 10px;cursor:pointer;transition:all .15s}
 .buf-btn.active{background:var(--goldd);color:var(--goldl);border-color:var(--goldd)}
+.buf-sep{flex:1}
+.exp-btn{background:none;border:1px solid var(--goldd);border-radius:2px;color:var(--gold);font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;padding:4px 12px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px}
+.exp-btn:hover{background:var(--goldd);color:var(--bg)}
+/* PRINT */
+@media print{
+  .hd,.tabs,.buf-row,.info-box,.pratos-grid,.sec-hd:first-of-type{display:none!important}
+  body{background:#fff;color:#111;font-size:11px}
+  .cat-block{break-inside:avoid;margin-bottom:14px}
+  .cat-name{font-weight:bold;border-bottom:1px solid #999;padding-bottom:4px;margin-bottom:6px}
+  .ins-row{display:grid;grid-template-columns:1fr 80px 40px 80px;gap:6px;padding:3px 0;border-bottom:1px solid #eee}
+  .hd-row{font-weight:bold;color:#555}
+  .ins-nome{color:#111}
+  .ins-qty,.ins-buf{text-align:right;font-family:monospace}
+  #print-header{display:block!important}
+}
 /* FICHAS */
 .ficha-acc{background:var(--s1);border:1px solid var(--s3);border-radius:var(--radius);margin-bottom:6px;overflow:hidden}
 .ficha-hd{display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;user-select:none}
@@ -151,12 +166,19 @@ body{background:var(--bg);color:var(--cr);font-family:'DM Sans',sans-serif;font-
   <div class="sec-hd">Porções por Prato — Esta Semana</div>
   <div id="pratosGrid" class="pratos-grid"></div>
   <div class="sec-hd">Insumos Totais</div>
+  <div id="print-header" style="display:none;margin-bottom:16px">
+    <div style="font-family:'DM Mono',monospace;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;margin-bottom:4px">DUE Restaurante · Lista de Compras</div>
+    <div id="print-meta" style="font-family:'DM Mono',monospace;font-size:.6rem;color:#555"></div>
+  </div>
   <div class="buf-row">
     <span class="buf-label">Buffer de segurança:</span>
     <button class="buf-btn" onclick="setBuf(0,this)">Sem buffer</button>
     <button class="buf-btn active" onclick="setBuf(10,this)">+10%</button>
     <button class="buf-btn" onclick="setBuf(15,this)">+15%</button>
     <button class="buf-btn" onclick="setBuf(20,this)">+20%</button>
+    <span class="buf-sep"></span>
+    <button class="exp-btn" onclick="exportCSV()">⬇ CSV</button>
+    <button class="exp-btn" onclick="printInsumos()">⎙ Imprimir</button>
   </div>
   <div id="insumosList"></div>
 </div></div>
@@ -732,6 +754,65 @@ function setBuf(pct, btn){
   document.querySelectorAll('.buf-btn').forEach(function(b){ b.classList.remove('active'); });
   btn.classList.add('active');
   renderInsumos();
+}
+
+function getWeekMeta(){
+  var paxExec=0, paxComp=0, paxDDM=0;
+  schedule.forEach(function(d){
+    paxExec += (d.exec||0);
+    paxComp += (d.comp||0);
+    paxDDM  += (d.ddm||0);
+  });
+  var today = new Date().toLocaleDateString('pt-BR');
+  return 'Gerado em: '+today+
+    ' | PAX semana — Executivo: '+paxExec+
+    ' · Completo: '+paxComp+
+    (paxDDM?' · DDM: '+paxDDM:'')+
+    ' | Buffer: '+(bufferPct?'+'+bufferPct+'%':'sem buffer');
+}
+
+function exportCSV(){
+  var insumos = calcInsumos();
+  var buf = 1 + bufferPct/100;
+  var bycat = {};
+  CAT_ORDER.forEach(function(c){ bycat[c]=[]; });
+  Object.values(insumos).forEach(function(i){
+    if(bycat[i.cat]) bycat[i.cat].push(i);
+    else bycat['O'].push(i);
+  });
+  // BOM UTF-8 para Excel reconhecer acentos
+  var rows = ['﻿'];
+  rows.push('DUE Restaurante — Lista de Compras');
+  rows.push(getWeekMeta());
+  rows.push('');
+  rows.push('Categoria;Insumo;Qtd Neta;Unidade;Qtd c/ Buffer ('+bufferPct+'%);Unidade');
+  CAT_ORDER.forEach(function(cat){
+    var items = bycat[cat];
+    if(!items||!items.length) return;
+    items.sort(function(a,b){ return b.qty-a.qty; });
+    items.forEach(function(i){
+      var qtyNet = fmt(i.qty, i.un).replace('.',',');
+      var qtyBuf = fmt(i.qty*buf, i.un).replace('.',',');
+      rows.push([CAT_LABELS[cat]||cat, i.nome, qtyNet, i.un, qtyBuf, i.un].join(';'));
+    });
+  });
+  var blob = new Blob([rows.join('\r\n')], {type:'text/csv;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var d = new Date();
+  var ds = d.getFullYear()+''+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+  a.href = url;
+  a.download = 'DUE_Insumos_'+ds+(bufferPct?'_buf'+bufferPct:'')+'.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function printInsumos(){
+  var meta = getWeekMeta();
+  document.getElementById('print-meta').textContent = meta;
+  document.getElementById('print-header').style.display = 'block';
+  window.print();
+  document.getElementById('print-header').style.display = 'none';
 }
 
 /* ══════════════════════════════════════════════════════════
