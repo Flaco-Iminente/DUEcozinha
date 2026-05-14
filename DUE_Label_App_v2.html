@@ -522,15 +522,8 @@ main {
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- BLOQUEIO DESKTOP -->
-<div id="desktop-block" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9999;flex-direction:column;align-items:center;justify-content:center;padding:40px;text-align:center;gap:24px">
-  <div style="font-size:56px">📱</div>
-  <div style="font-size:30px;font-weight:900;letter-spacing:5px;color:#c8a96e">DUE</div>
-  <div style="font-size:13px;color:#777;letter-spacing:2px;text-transform:uppercase;margin-top:-16px">Etiquetas</div>
-  <div style="font-size:15px;font-weight:700;color:#f0ece4;max-width:280px;line-height:1.7;margin-top:8px">Este app funciona exclusivamente no<br><span style="color:#c8a96e">Chrome Android</span></div>
-  <div style="font-size:12px;color:#555;max-width:260px;line-height:1.8;border:1px solid #2e2e2e;border-radius:12px;padding:14px;background:#1a1a1a">A impressão Bluetooth (Web BLE) só é suportada<br>no Chrome para Android. Acesse este link<br>no <strong style="color:#777">tablet da cozinha</strong>.</div>
-  <div style="font-size:10px;color:#333;font-family:monospace;margin-top:8px">flaco-iminente.github.io/DUEcozinha/<br>DUE_Label_App.html</div>
-</div>
+<!-- AVISO BT (não bloqueia) -->
+<div id="desktop-block" style="display:none"></div>
 
 <script>
 // ===== CONFIG =====
@@ -1116,14 +1109,14 @@ function atualizar() {
   const isP = S.tipo === 'personalizada';
   const nomeLivre = isP ? ((document.getElementById('campo-nomeLivre') || {}).value || '') : '';
   const temProduto = isP ? nomeLivre.trim().length > 0 : !!S.produto;
-  const podeImprimir = S.chef && temProduto && S.btStatus === 'connected';
+  // Impressora comum: não exige BT — libera com chef + produto selecionado
+  const podeImprimir = S.chef && temProduto;
   btn.disabled = !podeImprimir;
   const txt  = document.getElementById('btn-text');
   const icon = document.getElementById('btn-icon');
-  if (!S.chef)                        { txt.textContent = 'SELECIONE O CHEF';         icon.textContent = '👤'; }
-  else if (!temProduto)               { txt.textContent = isP ? 'DIGITE O NOME' : 'SELECIONE O PRODUTO'; icon.textContent = '📋'; }
-  else if (S.btStatus !== 'connected'){ txt.textContent = 'CONECTE A IMPRESSORA';      icon.textContent = '📡'; }
-  else { txt.textContent = 'IMPRIMIR ' + (S.qty > 1 ? S.qty + ' ETIQUETAS' : '1 ETIQUETA'); icon.textContent = '🖨'; }
+  if (!S.chef)         { txt.textContent = 'SELECIONE O CHEF';                                   icon.textContent = '👤'; }
+  else if (!temProduto){ txt.textContent = isP ? 'DIGITE O NOME' : 'SELECIONE O PRODUTO';        icon.textContent = '📋'; }
+  else                 { txt.textContent = 'IMPRIMIR ' + (S.qty > 1 ? S.qty + ' ETIQUETAS' : '1 ETIQUETA'); icon.textContent = '🖨'; }
   document.getElementById('btn-teste').style.display = S.btStatus === 'connected' ? 'block' : 'none';
   renderPreview();
 }
@@ -1453,7 +1446,7 @@ function buildTSPL30(dados) {
 
 // ===== IMPRIMIR (única função, unificada) =====
 async function imprimir() {
-  if (!S.chef || S.btStatus !== 'connected') return;
+  if (!S.chef) return;
 
   const isP = S.tipo === 'personalizada';
   const getCampo = id => { const el = document.getElementById('campo-' + id); return el ? el.value.trim() : ''; };
@@ -1469,33 +1462,99 @@ async function imprimir() {
     pesoLiquido: getCampo('pesoLiquido'), fornecedor: getCampo('fornecedor'), obs: getCampo('obs'),
   };
 
-  const tspl = buildTSPL(dados);
   const btn  = document.getElementById('btn-imprimir');
   const icon = document.getElementById('btn-icon');
   const txt  = document.getElementById('btn-text');
 
-  btn.classList.add('sending'); btn.disabled = true;
-  icon.textContent = '⏳'; txt.textContent = 'ENVIANDO…';
-
-  try {
-    await enviarTSPL(tspl);
-    btn.classList.remove('sending'); btn.classList.add('success');
+  // ── Modo Bluetooth (Chrome Android com impressora conectada) ──
+  if (S.btStatus === 'connected') {
+    const tspl = buildTSPL(dados);
+    btn.classList.add('sending'); btn.disabled = true;
+    icon.textContent = '⏳'; txt.textContent = 'ENVIANDO…';
+    try {
+      await enviarTSPL(tspl);
+      btn.classList.remove('sending'); btn.classList.add('success');
+      icon.textContent = '✓';
+      txt.textContent = S.qty + ' ETIQUETA' + (S.qty>1?'S':'') + ' ENVIADA' + (S.qty>1?'S':'') + '!';
+      showToast('✓ ' + S.qty + ' etiqueta' + (S.qty>1?'s':'') + ' impressa' + (S.qty>1?'s':'') + '!', 'ok');
+    } catch(err) {
+      btn.classList.remove('sending'); btn.disabled = false;
+      icon.textContent = '🖨'; txt.textContent = 'IMPRIMIR';
+      showToast('Erro BT: ' + err.message, 'error'); return;
+    }
+  } else {
+    // ── Modo Impressora Comum — window.print() ──
+    imprimirComImpressoraComum(dados);
+    btn.classList.add('success');
     icon.textContent = '✓';
-    txt.textContent = S.qty + ' ETIQUETA' + (S.qty>1?'S':'') + ' ENVIADA' + (S.qty>1?'S':'') + '!';
-    showToast('✓ ' + S.qty + ' etiqueta' + (S.qty>1?'s':'') + ' impressa' + (S.qty>1?'s':'') + '!', 'ok');
-    const stag = S.storage === 'congel' ? 'CONG' : S.storage === 'temp' ? 'T.AMB' : 'REFR';
-    S.log.unshift({ produto: nomeProduto, tipo: S.tipo, qty: S.qty, chef: S.chef, storage: stag, size: S.labelSize+'mm', hora: new Date().toTimeString().slice(0,5) });
-    renderLog();
+    txt.textContent = 'DIÁLOGO DE IMPRESSÃO ABERTO';
     setTimeout(() => {
       btn.classList.remove('success'); btn.disabled = false;
       icon.textContent = '🖨';
       txt.textContent = 'IMPRIMIR ' + (S.qty>1 ? S.qty+' ETIQUETAS' : '1 ETIQUETA');
-    }, 2500);
-  } catch(err) {
-    btn.classList.remove('sending'); btn.disabled = false;
-    icon.textContent = '📡'; txt.textContent = 'IMPRIMIR VIA BLUETOOTH';
-    showToast('Erro: ' + err.message, 'error');
+    }, 3000);
   }
+
+  const stag = S.storage === 'congel' ? 'CONG' : S.storage === 'temp' ? 'T.AMB' : 'REFR';
+  S.log.unshift({ produto: nomeProduto, tipo: S.tipo, qty: S.qty, chef: S.chef, storage: stag, size: S.labelSize+'mm', hora: new Date().toTimeString().slice(0,5) });
+  renderLog();
+}
+
+function imprimirComImpressoraComum(dados) {
+  const agora = new Date();
+  const fmt = d => d.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'2-digit' });
+  let dataValStr = '—';
+  if (dados.validadeDias != null && dados.validadeDias >= 0) {
+    const d = new Date(); d.setDate(d.getDate() + dados.validadeDias);
+    dataValStr = fmt(d);
+  }
+  const stag = dados.storage === 'congel' ? 'CONGELADO' : dados.storage === 'temp' ? 'T.AMBIENTE' : 'REFRIGERADO';
+  const tipoTag = { porcao:'PORÇÃO', producao:'PRODUÇÃO', entrada:'ENTRADA', personalizada:'CUSTOM' }[dados.tipo] || dados.tipo.toUpperCase();
+
+  // Gerar uma etiqueta HTML por unidade
+  let etiquetasHtml = '';
+  for (let i = 0; i < dados.qty; i++) {
+    etiquetasHtml += `
+    <div class="etiq">
+      <div class="etiq-stripe etiq-${dados.tipo}"></div>
+      <div class="etiq-head"><span class="etiq-brand">DUE</span><span class="etiq-tag">${tipoTag}</span></div>
+      <div class="etiq-produto">${dados.produto}${dados.peso ? ' · ' + dados.peso : ''}</div>
+      <div class="etiq-val"><span class="etiq-val-label">VALIDADE · ${stag}</span><span class="etiq-val-date">${dataValStr}</span></div>
+      <div class="etiq-foot">
+        <span>CHEF ${dados.chef}</span>
+        <span>${fmt(agora)} ${agora.toTimeString().slice(0,5)}</span>
+        <span>${dados.obs || dados.fornecedor || ''}</span>
+      </div>
+    </div>`;
+  }
+
+  const win = window.open('', '_blank', 'width=600,height=400');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>DUE Etiquetas</title>
+  <style>
+    @page { size: 50mm 30mm; margin: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: white; }
+    .etiq { width: 50mm; height: 30mm; display: flex; flex-direction: column; page-break-after: always; overflow: hidden; border: 0.3mm solid #ccc; }
+    .etiq-stripe { height: 3mm; flex-shrink: 0; }
+    .etiq-porcao { background: #1a1a2e; }
+    .etiq-producao { background: #1a2e1a; }
+    .etiq-entrada { background: #2e1a1a; }
+    .etiq-personalizada { background: #2e1a2e; }
+    .etiq-head { display: flex; justify-content: space-between; align-items: center; padding: 0.5mm 1.5mm; border-bottom: 0.2mm solid #eee; flex-shrink: 0; }
+    .etiq-brand { font-size: 6pt; font-weight: 900; letter-spacing: 1.5pt; }
+    .etiq-tag { font-size: 4pt; font-weight: 700; border: 0.3mm solid #111; padding: 0.3mm 1mm; letter-spacing: 0.5pt; }
+    .etiq-produto { padding: 1mm 1.5mm; font-size: 7pt; font-weight: 700; line-height: 1.2; flex: 1; display: flex; align-items: center; border-bottom: 0.2mm solid #eee; }
+    .etiq-val { background: #111; color: white; padding: 0.8mm 1.5mm; flex-shrink: 0; }
+    .etiq-val-label { font-size: 4pt; display: block; opacity: 0.7; letter-spacing: 0.5pt; }
+    .etiq-val-date { font-size: 8pt; font-weight: 900; display: block; }
+    .etiq-foot { display: flex; justify-content: space-between; padding: 0.5mm 1.5mm; background: #f7f7f7; border-top: 0.2mm solid #eee; flex-shrink: 0; }
+    .etiq-foot span { font-size: 4pt; color: #888; font-weight: 600; }
+    @media print { body { margin: 0; } }
+  </style></head><body>${etiquetasHtml}
+  <script>window.onload = function(){ window.print(); }<\/script>
+  </body></html>`);
+  win.document.close();
 }
 
 // ===== LOG =====
@@ -1665,15 +1724,15 @@ function showToast(msg, tipo) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// ===== ANDROID GUARD =====
+// ===== AVISO NÃO-BLOQUEANTE =====
+// Funciona em qualquer browser/dispositivo
+// O Bluetooth só funciona em Chrome Android — aviso contextual ao tentar conectar
 (function() {
   const ua = navigator.userAgent;
-  if (!/Android/i.test(ua)) {
-    const b = document.getElementById('desktop-block');
-    b.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-    document.body.style.pointerEvents = 'none';
-    b.style.pointerEvents = 'auto';
+  const isMobile = /Android|iPhone|iPad/i.test(ua);
+  if (!isMobile) {
+    const sub = document.querySelector('.logo-sub');
+    if (sub) sub.textContent = 'ETIQUETAS v2 · Desktop';
   }
 })();
 
