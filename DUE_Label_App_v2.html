@@ -79,6 +79,8 @@ body {
 .label30-stripe.limpeza { background: #1a2e2e; }
 .label30-stripe.bar { background: #2e2a1a; }
 .label30-stripe.seco { background: #2a1a2e; }
+.label30-stripe.armario { background: #7A5C10; }
+.label30-stripe.chave   { background: #8B3A2A; }
 .label30-header { display: flex; justify-content: space-between; align-items: center; padding: 2px 5px; border-bottom: 1px solid #eee; flex-shrink: 0; }
 .label30-brand { font-size: 9px; font-weight: 900; letter-spacing: 2px; }
 .label30-tipo { font-size: 6px; font-weight: 700; padding: 1px 3px; border: 1px solid #111; letter-spacing: 1px; text-transform: uppercase; }
@@ -197,6 +199,8 @@ main {
 .label-stripe.limpeza { background: #1a2e2e; }
 .label-stripe.bar { background: #2e2a1a; }
 .label-stripe.seco { background: #2a1a2e; }
+.label-stripe.armario { background: #7A5C10; }
+.label-stripe.chave   { background: #8B3A2A; }
 .label-header { display: flex; justify-content: space-between; align-items: center; padding: 4px 6px 2px; border-bottom: 1px solid #eee; }
 .label-brand { font-size: 11px; font-weight: 900; letter-spacing: 3px; }
 .label-type-tag { font-size: 6px; font-weight: 700; padding: 2px 4px; border: 1px solid #111; letter-spacing: 1px; text-transform: uppercase; }
@@ -340,6 +344,16 @@ main {
           <div class="tipo-icon">✏️</div>
           <div class="tipo-name">Personalizada</div>
           <div class="tipo-desc">Nome livre</div>
+        </button>
+        <button type="button" class="tipo-card" onclick="setTipo('armario',this)">
+          <div class="tipo-icon">🔒</div>
+          <div class="tipo-name">Armário</div>
+          <div class="tipo-desc">Nº do armário</div>
+        </button>
+        <button type="button" class="tipo-card" onclick="setTipo('chave',this)">
+          <div class="tipo-icon">🔑</div>
+          <div class="tipo-name">Chave</div>
+          <div class="tipo-desc">Par de chaves</div>
         </button>
       </div>
     </div>
@@ -947,14 +961,31 @@ function setTipo(tipo, el) {
   document.querySelectorAll('.tipo-card').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
   const isP = tipo === 'personalizada';
-  document.getElementById('sel-wrap').style.display         = isP ? 'none' : 'flex';
-  document.getElementById('nome-livre-wrap').style.display  = isP ? 'flex' : 'none';
+  const isArmario = tipo === 'armario';
+  const isChave   = tipo === 'chave';
+  const isPatrimonio = isArmario || isChave;
+  document.getElementById('sel-wrap').style.display         = (isP || isPatrimonio) ? 'none' : 'flex';
+  document.getElementById('nome-livre-wrap').style.display  = (isP || isPatrimonio) ? 'flex' : 'none';
   document.getElementById('val-manual-wrap').style.display  = isP ? 'flex' : 'none';
-  if (isP) {
+  if (isP || isPatrimonio) {
     S.produto = null; S.produtoObj = null; S.validadeDias = null; S.storage = 'refrig';
     document.getElementById('val-wrap').style.display = 'none';
     document.getElementById('storage-wrap').style.display = 'none';
     document.getElementById('val-manual-chip').style.display = 'none';
+    // Label do campo nome livre
+    const nomeLivreLabel = document.querySelector('#nome-livre-wrap label');
+    if (nomeLivreLabel) {
+      if (isArmario)      nomeLivreLabel.textContent = 'Número do Armário (ex: 1 a 12)';
+      else if (isChave)   nomeLivreLabel.textContent = 'Número do Armário (ex: 5)';
+      else                nomeLivreLabel.textContent = 'Nome do produto';
+    }
+    const nomeLivreInput = document.getElementById('campo-nomeLivre');
+    if (nomeLivreInput) {
+      if (isArmario)    nomeLivreInput.placeholder = 'Ex: 1, 2, 3...';
+      else if (isChave) nomeLivreInput.placeholder = 'Ex: 5';
+      else              nomeLivreInput.placeholder = 'Ex: Especial da casa...';
+      nomeLivreInput.type = isPatrimonio ? 'number' : 'text';
+    }
   } else {
     document.getElementById('sel-produto').value = '';
     document.getElementById('search-produto').value = '';
@@ -1077,10 +1108,12 @@ function renderCampos() {
   } else if (tipo === 'personalizada') {
     html += fieldHtml('peso', 'Peso / Quantidade', 'text', 'Ex: 200g');
     html += fieldHtml('obs',  'Observação (opcional)', 'text', '');
+  } else if (tipo === 'armario' || tipo === 'chave') {
+    // sem campos extras — número vem do campo nomeLivre
   }
   el.innerHTML = html;
   el.querySelectorAll('input').forEach(inp => inp.addEventListener('input', atualizar));
-  if (tipo !== 'personalizada') renderValidade();
+  if (tipo !== 'personalizada' && tipo !== 'armario' && tipo !== 'chave') renderValidade();
 }
 
 function renderValidade() {
@@ -1107,15 +1140,16 @@ function changeQty(delta) {
 function atualizar() {
   const btn = document.getElementById('btn-imprimir');
   const isP = S.tipo === 'personalizada';
-  const nomeLivre = isP ? ((document.getElementById('campo-nomeLivre') || {}).value || '') : '';
-  const temProduto = isP ? nomeLivre.trim().length > 0 : !!S.produto;
+  const isPatrimonio = S.tipo === 'armario' || S.tipo === 'chave';
+  const nomeLivre = (isP || isPatrimonio) ? ((document.getElementById('campo-nomeLivre') || {}).value || '') : '';
+  const temProduto = (isP || isPatrimonio) ? nomeLivre.trim().length > 0 : !!S.produto;
   // Impressora comum: não exige BT — libera com chef + produto selecionado
   const podeImprimir = S.chef && temProduto;
   btn.disabled = !podeImprimir;
   const txt  = document.getElementById('btn-text');
   const icon = document.getElementById('btn-icon');
   if (!S.chef)         { txt.textContent = 'SELECIONE O CHEF';                                   icon.textContent = '👤'; }
-  else if (!temProduto){ txt.textContent = isP ? 'DIGITE O NOME' : 'SELECIONE O PRODUTO';        icon.textContent = '📋'; }
+  else if (!temProduto){ txt.textContent = isPatrimonio ? 'DIGITE O NÚMERO' : isP ? 'DIGITE O NOME' : 'SELECIONE O PRODUTO'; icon.textContent = '📋'; }
   else                 { txt.textContent = 'IMPRIMIR ' + (S.qty > 1 ? S.qty + ' ETIQUETAS' : '1 ETIQUETA'); icon.textContent = '🖨'; }
   document.getElementById('btn-teste').style.display = S.btStatus === 'connected' ? 'block' : 'none';
   renderPreview();
@@ -1126,18 +1160,65 @@ function renderPreview() {
   const wrap = document.getElementById('preview-wrap');
   const agora = new Date();
   const isP = S.tipo === 'personalizada';
-  const nomeLivre = isP ? ((document.getElementById('campo-nomeLivre')||{}).value||'').trim() : null;
-  const nomeProduto = isP ? (nomeLivre||'Nome do produto') : (S.produto||'Selecione produto');
-  const isSel = isP ? !!nomeLivre : !!S.produto;
+  const isArmario = S.tipo === 'armario';
+  const isChave   = S.tipo === 'chave';
+  const isPatrimonio = isArmario || isChave;
+  const nomeLivre = (isP || isPatrimonio) ? ((document.getElementById('campo-nomeLivre')||{}).value||'').trim() : null;
+  const nomeProduto = (isP || isPatrimonio) ? (nomeLivre || (isArmario ? 'Nº Armário' : 'Nº Chave')) : (S.produto||'Selecione produto');
+  const isSel = (isP || isPatrimonio) ? !!nomeLivre : !!S.produto;
   let dataValStr = '—';
   if (S.validadeDias != null && S.validadeDias >= 0) {
     const d = new Date(); d.setDate(d.getDate() + S.validadeDias); dataValStr = fmt(d);
   }
   const stag = S.storage === 'congel' ? 'CONG' : S.storage === 'temp' ? 'T.AMB' : 'REFR';
-  const tipoTags = { porcao:'Porção', producao:'Produção', entrada:'Entrada', personalizada:'Custom' };
+  const tipoTags = { porcao:'Porção', producao:'Produção', entrada:'Entrada', personalizada:'Custom', armario:'Armário', chave:'Chave' };
   const pesoEl = document.getElementById('campo-peso');
   const pesoVal = pesoEl ? pesoEl.value : '';
   const tipoClass = S.tipo;
+
+  // ── ARMÁRIO: número centralizado + DUE + stripe ouro ──
+  if (isArmario) {
+    const num = nomeLivre || '—';
+    wrap.innerHTML = '<div class="label" style="justify-content:stretch">' +
+      '<div class="label-stripe armario" style="height:12px"></div>' +
+      '<div class="label-header"><span class="label-brand">DUE</span><span class="label-type-tag">ARMÁRIO</span></div>' +
+      '<div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px">' +
+        '<div style="font-size:72px;font-weight:900;color:#111;line-height:1;font-family:Georgia,serif">' + escapeHtml(num) + '</div>' +
+        '<div style="font-size:8px;font-weight:700;letter-spacing:3px;color:#888;text-transform:uppercase">Funcionário</div>' +
+      '</div>' +
+      '<div class="label-footer" style="background:#f0ece0;border-top:1px solid #C8A030">' +
+        '<span class="label-footer-item" style="color:#7A5C10">DUE RESTAURANTE</span>' +
+        '<span class="label-footer-item">JARDIM EUROPA · AJU</span>' +
+      '</div>' +
+    '</div>';
+    return;
+  }
+
+  // ── CHAVE: número grande + "CHAVE Nº X" + linha dupla ──
+  if (isChave) {
+    const num = nomeLivre || '—';
+    wrap.innerHTML = '<div class="label" style="justify-content:stretch">' +
+      '<div class="label-stripe chave" style="height:8px"></div>' +
+      '<div class="label-header"><span class="label-brand">DUE</span><span class="label-type-tag" style="border-color:#8B3A2A;color:#8B3A2A">CHAVE</span></div>' +
+      '<div style="flex:1;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #eee">' +
+        '<div style="text-align:center">' +
+          '<div style="font-size:7px;font-weight:700;letter-spacing:2px;color:#8B3A2A;text-transform:uppercase;margin-bottom:4px">ARMÁRIO Nº</div>' +
+          '<div style="font-size:80px;font-weight:900;color:#111;line-height:0.9;font-family:Georgia,serif">' + escapeHtml(num) + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="display:flex;border-top:1.5px dashed #ccc;margin:0">' +
+        '<div style="flex:1;padding:3px 6px;text-align:center;border-right:1px dashed #ccc">' +
+          '<div style="font-size:5px;color:#aaa;letter-spacing:1px">CÓPIA 1</div>' +
+          '<div style="font-size:7px;font-weight:700;color:#8B3A2A">Armário ' + escapeHtml(num) + '</div>' +
+        '</div>' +
+        '<div style="flex:1;padding:3px 6px;text-align:center">' +
+          '<div style="font-size:5px;color:#aaa;letter-spacing:1px">CÓPIA 2</div>' +
+          '<div style="font-size:7px;font-weight:700;color:#8B3A2A">Armário ' + escapeHtml(num) + '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+    return;
+  }
 
   if (S.labelSize === '30') {
     wrap.innerHTML = '<div class="label30">' +
@@ -1310,7 +1391,74 @@ function quebrarLinha(texto, maxChars) {
   return linhas;
 }
 
-function buildTSPL(dados) { return S.labelSize === '30' ? buildTSPL30(dados) : buildTSPL80(dados); }
+function buildTSPL(dados) {
+  if (dados.tipo === 'armario') return buildTSPL_Armario(dados);
+  if (dados.tipo === 'chave')   return buildTSPL_Chave(dados);
+  return S.labelSize === '30' ? buildTSPL30(dados) : buildTSPL80(dados);
+}
+
+// ===== BUILD TSPL ARMÁRIO 50x30mm =====
+function buildTSPL_Armario(dados) {
+  const num = semAcento(dados.produto || '?');
+  const R = '\r\n', W = 400;
+  let c = '';
+  c += 'SIZE 50 mm, 30 mm' + R;
+  c += 'GAP 3 mm, 0' + R;
+  c += 'DIRECTION 1' + R;
+  c += 'REFERENCE 0,0' + R;
+  c += 'OFFSET 0 mm' + R;
+  c += 'SET PEEL OFF' + R;
+  c += 'SET CUTTER OFF' + R;
+  c += 'CLS' + R;
+  // Stripe topo ouro (5px)
+  c += 'BAR 0,0,' + W + ',5' + R;
+  // DUE à esquerda / ARMARIO à direita
+  c += 'TEXT 10,8,"1",0,1,1,"DUE"' + R;
+  c += 'TEXT ' + (W - 60) + ',8,"1",0,1,1,"ARMARIO"' + R;
+  c += 'BAR 10,24,' + (W-20) + ',1' + R;
+  // Número grande centralizado
+  const xNum = centrX(num, 24);
+  c += 'TEXT ' + xNum + ',28,"4",0,2,2,"' + num + '"' + R;
+  // Linha separadora
+  c += 'BAR 10,140,' + (W-20) + ',1' + R;
+  // Rodapé
+  c += 'TEXT ' + centrX('DUE RESTAURANTE', 7) + ',146,"1",0,1,1,"DUE RESTAURANTE"' + R;
+  c += 'PRINT ' + (dados.qty||1) + ',1' + R;
+  return c;
+}
+
+// ===== BUILD TSPL CHAVE 50x30mm (2 cópias na mesma etiqueta com linha de corte) =====
+function buildTSPL_Chave(dados) {
+  const num = semAcento(dados.produto || '?');
+  const R = '\r\n', W = 400;
+  let c = '';
+  c += 'SIZE 50 mm, 30 mm' + R;
+  c += 'GAP 3 mm, 0' + R;
+  c += 'DIRECTION 1' + R;
+  c += 'REFERENCE 0,0' + R;
+  c += 'OFFSET 0 mm' + R;
+  c += 'SET PEEL OFF' + R;
+  c += 'SET CUTTER OFF' + R;
+  c += 'CLS' + R;
+  // Stripe topo
+  c += 'BAR 0,0,' + W + ',4' + R;
+  // Header
+  c += 'TEXT 10,6,"1",0,1,1,"DUE"' + R;
+  c += 'TEXT ' + (W - 50) + ',6,"1",0,1,1,"CHAVE"' + R;
+  c += 'BAR 10,20,' + (W-20) + ',1' + R;
+  // Número grande centralizado
+  const xNum = centrX(num, 24);
+  c += 'TEXT ' + xNum + ',24,"4",0,2,2,"' + num + '"' + R;
+  // Linha de corte pontilhada no meio
+  c += 'BAR 10,120,' + (W-20) + ',1' + R;
+  c += 'TEXT ' + centrX('- - - - CORTAR - - - -', 7) + ',110,"1",0,1,1,"- - - - CORTAR - - - -"' + R;
+  // Segunda metade espelhada (cópia)
+  c += 'TEXT 10,128,"1",0,1,1,"DUE  CHAVE"' + R;
+  c += 'TEXT ' + xNum + ',138,"4",0,2,2,"' + num + '"' + R;
+  c += 'TEXT ' + centrX('ARMARIO ' + num, 7) + ',196,"1",0,1,1,"ARMARIO ' + num + '"' + R;
+  c += 'PRINT ' + (dados.qty||1) + ',1' + R;
+  return c;
+}
 
 // ===== BUILD TSPL 50x80mm =====
 function buildTSPL80(dados) {
@@ -1449,11 +1597,12 @@ async function imprimir() {
   if (!S.chef) return;
 
   const isP = S.tipo === 'personalizada';
+  const isPatrimonio = S.tipo === 'armario' || S.tipo === 'chave';
   const getCampo = id => { const el = document.getElementById('campo-' + id); return el ? el.value.trim() : ''; };
-  const nomeLivre = isP ? getCampo('nomeLivre') : '';
-  const nomeProduto = isP ? nomeLivre : S.produto;
+  const nomeLivre = (isP || isPatrimonio) ? getCampo('nomeLivre') : '';
+  const nomeProduto = (isP || isPatrimonio) ? nomeLivre : S.produto;
 
-  if (!nomeProduto) { showToast(isP ? 'Digite o nome do produto' : 'Selecione o produto', 'warn'); return; }
+  if (!nomeProduto) { showToast(isPatrimonio ? 'Digite o número' : isP ? 'Digite o nome do produto' : 'Selecione o produto', 'warn'); return; }
 
   const dados = {
     produto: nomeProduto, tipo: S.tipo, validadeDias: S.validadeDias,
@@ -1503,6 +1652,89 @@ async function imprimir() {
 function imprimirComImpressoraComum(dados) {
   const agora = new Date();
   const fmt = d => d.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'2-digit' });
+
+  // ── ARMÁRIO ──
+  if (dados.tipo === 'armario') {
+    let html = '';
+    for (let i = 0; i < dados.qty; i++) {
+      html += `
+      <div class="etiq etiq-armario">
+        <div class="arm-stripe"></div>
+        <div class="arm-head"><span class="arm-brand">DUE</span><span class="arm-tag">ARMÁRIO</span></div>
+        <div class="arm-num">${dados.produto}</div>
+        <div class="arm-foot"><span>DUE RESTAURANTE</span><span>JARDIM EUROPA · AJU</span></div>
+      </div>`;
+    }
+    const win = window.open('', '_blank', 'width=600,height=400');
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>DUE Armário</title>
+    <style>
+      @page { size: 50mm 30mm; margin: 0; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: Arial, sans-serif; background: white; }
+      .etiq-armario { width: 50mm; height: 30mm; display: flex; flex-direction: column; page-break-after: always; overflow: hidden; border: 0.3mm solid #C8A030; }
+      .arm-stripe { height: 3.5mm; background: #7A5C10; flex-shrink: 0; }
+      .arm-head { display: flex; justify-content: space-between; align-items: center; padding: 0.4mm 1.5mm; border-bottom: 0.2mm solid #eee; flex-shrink: 0; }
+      .arm-brand { font-size: 6pt; font-weight: 900; letter-spacing: 2pt; }
+      .arm-tag { font-size: 4pt; font-weight: 700; border: 0.3mm solid #7A5C10; padding: 0.3mm 1mm; letter-spacing: 0.5pt; color: #7A5C10; }
+      .arm-num { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 26pt; font-weight: 900; color: #111; font-family: Georgia, serif; }
+      .arm-foot { display: flex; justify-content: space-between; padding: 0.4mm 1.5mm; background: #f5f0e0; border-top: 0.3mm solid #C8A030; flex-shrink: 0; }
+      .arm-foot span { font-size: 4pt; color: #7A5C10; font-weight: 700; }
+      @media print { body { margin: 0; } }
+    </style></head><body>${html}
+    <script>window.onload = function(){ window.print(); }<\/script>
+    </body></html>`);
+    win.document.close();
+    return;
+  }
+
+  // ── CHAVE ──
+  if (dados.tipo === 'chave') {
+    let html = '';
+    for (let i = 0; i < dados.qty; i++) {
+      html += `
+      <div class="etiq etiq-chave">
+        <div class="chv-stripe"></div>
+        <div class="chv-head"><span class="chv-brand">DUE</span><span class="chv-tag">CHAVE</span></div>
+        <div class="chv-body">
+          <div class="chv-num">${dados.produto}</div>
+          <div class="chv-sub">ARMÁRIO Nº ${dados.produto}</div>
+        </div>
+        <div class="chv-corte">— — — — CORTAR — — — —</div>
+        <div class="chv-copies">
+          <div class="chv-copy"><span class="chv-copy-label">CÓPIA 1</span><span class="chv-copy-num">${dados.produto}</span></div>
+          <div class="chv-copy chv-copy-r"><span class="chv-copy-label">CÓPIA 2</span><span class="chv-copy-num">${dados.produto}</span></div>
+        </div>
+      </div>`;
+    }
+    const win = window.open('', '_blank', 'width=600,height=400');
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>DUE Chave</title>
+    <style>
+      @page { size: 50mm 30mm; margin: 0; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: Arial, sans-serif; background: white; }
+      .etiq-chave { width: 50mm; height: 30mm; display: flex; flex-direction: column; page-break-after: always; overflow: hidden; border: 0.3mm solid #8B3A2A; }
+      .chv-stripe { height: 2.5mm; background: #8B3A2A; flex-shrink: 0; }
+      .chv-head { display: flex; justify-content: space-between; align-items: center; padding: 0.3mm 1.5mm; border-bottom: 0.2mm solid #eee; flex-shrink: 0; }
+      .chv-brand { font-size: 6pt; font-weight: 900; letter-spacing: 2pt; }
+      .chv-tag { font-size: 4pt; font-weight: 700; border: 0.3mm solid #8B3A2A; padding: 0.2mm 1mm; letter-spacing: 0.5pt; color: #8B3A2A; }
+      .chv-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+      .chv-num { font-size: 22pt; font-weight: 900; font-family: Georgia, serif; color: #111; line-height: 1; }
+      .chv-sub { font-size: 4.5pt; color: #8B3A2A; font-weight: 700; letter-spacing: 0.5pt; margin-top: 0.5mm; }
+      .chv-corte { font-size: 4pt; color: #bbb; text-align: center; border-top: 0.3mm dashed #ccc; border-bottom: 0.3mm dashed #ccc; padding: 0.4mm 0; flex-shrink: 0; letter-spacing: 1pt; }
+      .chv-copies { display: flex; flex-shrink: 0; }
+      .chv-copy { flex: 1; padding: 0.8mm 1.5mm; display: flex; flex-direction: column; align-items: center; border-right: 0.3mm solid #eee; }
+      .chv-copy-r { border-right: none; }
+      .chv-copy-label { font-size: 4pt; color: #aaa; letter-spacing: 0.5pt; }
+      .chv-copy-num { font-size: 9pt; font-weight: 900; color: #8B3A2A; font-family: Georgia, serif; }
+      @media print { body { margin: 0; } }
+    </style></head><body>${html}
+    <script>window.onload = function(){ window.print(); }<\/script>
+    </body></html>`);
+    win.document.close();
+    return;
+  }
+
+  // ── TIPOS EXISTENTES (porcao, producao, entrada, personalizada) ──
   let dataValStr = '—';
   if (dados.validadeDias != null && dados.validadeDias >= 0) {
     const d = new Date(); d.setDate(d.getDate() + dados.validadeDias);
